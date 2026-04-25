@@ -161,7 +161,7 @@
 
   .checkout-payment {
     position: static;
-    order: -1; /* Payment summary first on mobile */
+    order: 2; /* Payment below items on mobile */
   }
 }
 

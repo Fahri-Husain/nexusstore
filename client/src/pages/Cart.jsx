@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { HiOutlineTrash, HiArrowRight, HiOutlineShoppingCart } from 'react-icons/hi';
+import { HiOutlineTrash, HiArrowRight, HiArrowLeft, HiOutlineShoppingCart } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import './Cart.css';
 
@@ -27,6 +27,9 @@ export default function Cart() {
   if (cartItems.length === 0) {
     return (
       <div className="page-container container">
+        <Link to="/" className="back-link">
+          <HiArrowLeft /> Kembali ke Beranda
+        </Link>
         <div className="cart-empty animate-fadeIn">
           <div className="cart-empty-icon">
             <HiOutlineShoppingCart />
@@ -43,6 +46,9 @@ export default function Cart() {
 
   return (
     <div className="page-container container">
+      <Link to="/" className="back-link">
+        <HiArrowLeft /> Kembali ke Beranda
+      </Link>
       <h1 className="section-title">Keranjang Belanja</h1>
 
       <div className="cart-layout animate-fadeIn">

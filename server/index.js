@@ -74,15 +74,22 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── Serve static frontend in production (AFTER API routes) ──────────────────
-if (process.env.NODE_ENV === 'production' || process.env.SERVE_CLIENT === 'true') {
-  const clientDist = path.join(__dirname, '../client/dist');
-  app.use(express.static(clientDist));
-  // Fallback: send index.html for any non-API route (SPA routing)
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDist, 'index.html'));
-  });
+// ─── Serve static frontend (AFTER API routes) ──────────────────────────────
+const fs = require('fs');
+let clientDist = path.join(__dirname, '../client/dist'); // Local development build
+
+// Jika di Hostinger, biasanya frontend ada di ../public_html
+if (!fs.existsSync(clientDist)) {
+  clientDist = path.join(__dirname, '../public_html');
 }
+
+// Serve static files
+app.use(express.static(clientDist));
+
+// Fallback: send index.html for any non-API route (SPA routing)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientDist, 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`

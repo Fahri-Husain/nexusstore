@@ -6,49 +6,57 @@
 
 /* CSS Reset & Variables */
 :root {
-  /* Colors */
-  --primary: #6C5CE7;
-  --primary-light: #A29BFE;
-  --primary-dark: #5A4BD1;
-  --accent: #00D2FF;
-  --accent-alt: #7C3AED;
-  --accent-green: #00E676;
-  --accent-yellow: #FFD600;
-  --accent-red: #FF5252;
-  --accent-orange: #FF9100;
+  /* Colors - Light Theme based on image */
+  --primary: #1A1A1A;
+  /* Dark charcoal for main accents */
+  --primary-light: #333333;
+  --primary-dark: #000000;
+  --accent: #B0B0B0;
+  /* Warm gray for secondary buttons */
+  --accent-alt: #E0E0E0;
+  --accent-green: #2E7D32;
+  --accent-yellow: #F57F17;
+  --accent-red: #D32F2F;
+  --accent-orange: #E65100;
 
   /* Backgrounds */
-  --bg-primary: #0A0A0F;
-  --bg-secondary: #0E0E15;
-  --bg-surface: #13131A;
-  --bg-surface-light: #1A1A25;
-  --bg-surface-hover: #1E1E2A;
-  --bg-card: #16161F;
-  --bg-input: #1A1A25;
+  --bg-primary: #ffffff;
+  /* Pale cream/off-white body background */
+  --bg-secondary: #E0E0E0;
+  /* Slightly darker grey for header and footer */
+  --bg-surface: #FFFFFF;
+  /* Pure white for cards */
+  --bg-surface-light: #F5F5F5;
+  --bg-surface-hover: #F0F0F0;
+  --bg-card: #FFFFFF;
+  --bg-input: #FFFFFF;
 
   /* Borders */
-  --border-color: #2A2A3A;
-  --border-light: #333348;
+  --border-color: #E0E0E0;
+  /* Light gray borders */
+  --border-light: #EEEEEE;
 
   /* Text */
-  --text-primary: #FFFFFF;
-  --text-secondary: #8B8BA3;
-  --text-muted: #5A5A72;
-  --text-accent: #A29BFE;
+  --text-primary: #1A1A1A;
+  /* Dark text */
+  --text-secondary: #555555;
+  /* Medium gray text */
+  --text-muted: #888888;
+  --text-accent: #1A1A1A;
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #6C5CE7, #00D2FF);
-  --gradient-accent: linear-gradient(135deg, #7C3AED, #6C5CE7);
-  --gradient-warm: linear-gradient(135deg, #FF6B6B, #FFD93D);
-  --gradient-card: linear-gradient(145deg, rgba(108, 92, 231, 0.08), rgba(0, 210, 255, 0.05));
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  --gradient-primary: #1A1A1A;
+  --gradient-accent: #B0B0B0;
+  --gradient-warm: #E0E0E0;
+  --gradient-card: transparent;
+  --gradient-glass: transparent;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 20px rgba(108, 92, 231, 0.3);
-  --shadow-glow-accent: 0 0 20px rgba(0, 210, 255, 0.3);
+  /* Shadows - Subtle but visible to make cards pop */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.1);
+  --shadow-glow: none;
+  --shadow-glow-accent: none;
 
   /* Spacing */
   --spacing-xs: 0.25rem;
@@ -81,7 +89,9 @@
 }
 
 /* Reset */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -116,12 +126,15 @@ button {
   outline: none;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: var(--font-family);
   outline: none;
 }
 
-ul, ol {
+ul,
+ol {
   list-style: none;
 }
 
@@ -134,13 +147,16 @@ img {
 ::-webkit-scrollbar {
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
@@ -174,12 +190,7 @@ img {
 }
 
 .btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(rgba(255,255,255,0.1), transparent);
-  opacity: 0;
-  transition: opacity var(--transition-fast);
+  display: none;
 }
 
 .btn:hover::after {
@@ -187,14 +198,15 @@ img {
 }
 
 .btn-primary {
-  background: var(--gradient-primary);
-  color: white;
-  box-shadow: var(--shadow-glow);
+  background: var(--primary);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
 }
 
 .btn-primary:hover {
+  background: var(--primary-light);
   transform: translateY(-2px);
-  box-shadow: 0 0 30px rgba(108, 92, 231, 0.5);
 }
 
 .btn-primary:active {
@@ -249,13 +261,12 @@ img {
   border-radius: var(--radius-full);
 }
 
-/* Glass Card */
+/* Glass Card -> Solid White Card */
 .glass-card {
-  background: var(--gradient-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Input Fields */
@@ -273,12 +284,13 @@ img {
 
 .form-input {
   padding: 14px 18px;
-  background: var(--bg-input);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-size: 0.95rem;
   transition: all var(--transition-normal);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .form-input:focus {
@@ -367,57 +379,127 @@ img {
    ============================================= */
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(108, 92, 231, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(108, 92, 231, 0.6); }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-fadeIn {
@@ -471,12 +553,12 @@ img {
   .container {
     padding: 0 var(--spacing-md);
   }
-  
+
   .section-title {
     font-size: 1.25rem;
     margin-bottom: var(--spacing-md);
   }
-  
+
   .page-container {
     padding-top: calc(var(--navbar-height) + var(--spacing-lg));
   }
@@ -506,7 +588,10 @@ img {
 
 /* Prevent zoom on input focus on iOS (inputs must be >= 16px) */
 @media (max-width: 768px) {
-  input, textarea, select {
+
+  input,
+  textarea,
+  select {
     font-size: 16px !important;
   }
 }
@@ -519,6 +604,7 @@ img {
 
 /* Touch-friendly interactive elements */
 @media (hover: none) and (pointer: coarse) {
+
   /* Remove hover transforms on touch devices */
   .game-card:hover {
     transform: none;
@@ -591,4 +677,3 @@ img {
     padding-bottom: calc(var(--spacing-lg) + env(safe-area-inset-bottom));
   }
 }
-

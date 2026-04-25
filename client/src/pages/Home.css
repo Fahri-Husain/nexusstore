@@ -171,6 +171,21 @@
     align-items: stretch;
   }
 
+  .genre-filters {
+    margin-left: calc(-1 * var(--spacing-lg));
+    margin-right: calc(-1 * var(--spacing-lg));
+    padding-left: var(--spacing-lg);
+    padding-right: var(--spacing-lg);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .genre-filters::-webkit-scrollbar {
+    display: none;
+  }
+
   .sort-select {
     width: 100%;
   }

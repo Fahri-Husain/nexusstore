@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineX, HiOutlineShieldCheck } from 'react-icons/hi';
+import {
+  HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineX,
+  HiOutlineShieldCheck, HiOutlineViewGrid, HiOutlineCollection,
+  HiOutlineClipboardList, HiOutlineHome, HiOutlineRefresh,
+  HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineStar,
+  HiOutlineSearch, HiOutlineFilter, HiOutlineDownload, HiOutlineDocumentText,
+  HiOutlineChartBar,
+} from 'react-icons/hi';
 import toast from 'react-hot-toast';
 import './AdminPanel.css';
 
@@ -16,15 +24,25 @@ export default function AdminPanel() {
   const [games, setGames] = useState([]);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('games');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [showModal, setShowModal] = useState(false);
   const [editingGame, setEditingGame] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // ── Order Filters ────────────────────────────────
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderStatus, setOrderStatus] = useState('all');
+  const [orderDateFrom, setOrderDateFrom] = useState('');
+  const [orderDateTo, setOrderDateTo] = useState('');
+
   const [formData, setFormData] = useState({
     title: '', description: '', price: 0, discount: 0,
     image_url: '', category: '', developer: '', publisher: '',
     release_date: '', platform: 'PC', rating: 4.0,
     min_requirements: '', rec_requirements: '',
   });
+
+  const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
   useEffect(() => {
     fetchData();
@@ -33,39 +51,26 @@ export default function AdminPanel() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch games
       const gamesRes = await supabase.from('games').select('*').eq('isdeleted', 0).order('createddate', { ascending: false });
       setGames(gamesRes.data || []);
 
-      // Fetch orders with robust fallback logic
+      // Fetch orders via backend to bypass RLS on order_items
       let ordersData = [];
       try {
-        const ordersRes = await supabase
+        const response = await fetch(`${API_URL}/orders/admin/all`);
+        if (!response.ok) throw new Error('Gagal mengambil pesanan dari server');
+        ordersData = await response.json();
+      } catch (err) {
+        console.error('Fetch orders API error:', err);
+        // Fallback to supabase direct fetch if backend is not accessible
+        const fallbackRes = await supabase
           .from('orders')
           .select('*, order_items(*)')
           .eq('isdeleted', 0)
           .order('createddate', { ascending: false })
           .limit(50);
-          
-        if (ordersRes.error) throw ordersRes.error;
-        ordersData = ordersRes.data || [];
-      } catch (err) {
-        console.warn('Gagal fetch order_items join, mencoba fallback...', err);
-        // Fallback without items
-        const fallbackRes = await supabase
-          .from('orders')
-          .select('*')
-          .eq('isdeleted', 0)
-          .order('createddate', { ascending: false })
-          .limit(50);
-          
-        if (fallbackRes.error) {
-          console.error('Fallback fetch orders gagal:', fallbackRes.error);
-        } else {
-          ordersData = fallbackRes.data || [];
-        }
+        ordersData = fallbackRes.data || [];
       }
-      
       setOrders(ordersData);
     } catch (error) {
       console.error('Error in fetchData:', error);
@@ -153,125 +158,620 @@ export default function AdminPanel() {
     }
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+  const formatPrice = (price) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+
+  // ── Filtered Orders ──────────────────────────────
+  const filteredOrders = orders.filter(order => {
+    const searchLower = orderSearch.toLowerCase();
+    const matchSearch = !orderSearch ||
+      (order.order_code || '').toLowerCase().includes(searchLower) ||
+      (order.user_email || '').toLowerCase().includes(searchLower) ||
+      (order.payment_method || '').toLowerCase().includes(searchLower);
+
+    const matchStatus = orderStatus === 'all' || String(order.status) === orderStatus;
+
+    const orderDate = order.createddate ? new Date(order.createddate) : null;
+    const matchFrom = !orderDateFrom || (orderDate && orderDate >= new Date(orderDateFrom));
+    const matchTo = !orderDateTo || (orderDate && orderDate <= new Date(orderDateTo + 'T23:59:59'));
+
+    return matchSearch && matchStatus && matchFrom && matchTo;
+  });
+
+  // ── Export CSV ───────────────────────────────────
+  const exportCSV = () => {
+    const headers = ['Order Code', 'Tanggal', 'Items', 'Total', 'Status', 'Metode'];
+    const rows = filteredOrders.map(o => [
+      o.order_code || '',
+      o.createddate ? new Date(o.createddate).toLocaleDateString('id-ID') : '',
+      (o.order_items?.length || 0) + ' item',
+      o.total_amount || 0,
+      (STATUS_MAP[o.status] || {}).label || 'Unknown',
+      o.payment_method || '-',
+    ]);
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${filteredOrders.length} order diekspor ke Excel/CSV`);
   };
 
+  // ── Export PDF (print) ───────────────────────────
+  const exportPDF = () => {
+    const printRows = filteredOrders.map(o => `
+      <tr>
+        <td>${o.order_code || ''}</td>
+        <td>${o.createddate ? new Date(o.createddate).toLocaleDateString('id-ID') : ''}</td>
+        <td>${o.order_items?.length || 0} item</td>
+        <td>${formatPrice(o.total_amount)}</td>
+        <td>${(STATUS_MAP[o.status] || {}).label || 'Unknown'}</td>
+        <td>${o.payment_method || '-'}</td>
+      </tr>`).join('');
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+      <title>Orders Report — Nexus Store</title>
+      <style>
+        body { font-family: sans-serif; font-size: 12px; color: #111; }
+        h2 { margin-bottom: 8px; }
+        p { color: #666; margin-bottom: 16px; font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 7px 10px; text-align: left; }
+        th { background: #f5f5f5; font-weight: 600; }
+        tr:nth-child(even) td { background: #fafafa; }
+      </style></head><body>
+      <h2>Laporan Orders — Nexus Store</h2>
+      <p>Dicetak: ${new Date().toLocaleString('id-ID')} | Total: ${filteredOrders.length} pesanan</p>
+      <table><thead><tr>
+        <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
+      </tr></thead><tbody>${printRows}</tbody></table>
+      </body></html>`;
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); w.close(); }, 500);
+  };
+
+  const resetFilters = () => {
+    setOrderSearch('');
+    setOrderStatus('all');
+    setOrderDateFrom('');
+    setOrderDateTo('');
+  };
+  const hasActiveFilters = orderSearch || orderStatus !== 'all' || orderDateFrom || orderDateTo;
+
+
+  const totalRevenue = orders.filter(o => o.status === 2).reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  const successOrders = orders.filter(o => o.status === 2).length;
+  const pendingOrders = orders.filter(o => o.status === 1).length;
+
+  const navItems = [
+    { key: 'dashboard', label: 'Dashboard', icon: <HiOutlineViewGrid /> },
+    { key: 'games', label: 'Games', icon: <HiOutlineCollection /> },
+    { key: 'orders', label: 'Orders', icon: <HiOutlineClipboardList /> },
+    { key: 'laporan', label: 'Laporan Penjualan', icon: <HiOutlineChartBar /> },
+  ];
+
+  // ── Helper: get item count robustly (works even if RLS blocked) ────
+  const getItemCount = (order) => {
+    if (Array.isArray(order.order_items) && order.order_items.length > 0) {
+      return order.order_items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+    }
+    // If order_items empty due to RLS, show '-' so admin knows data is missing
+    return null;
+  };
+
+  // ── Laporan Penjualan computed data ───────────────────
+  const successOrdersList = orders.filter(o => o.status === 2);
+  const totalItems = successOrdersList.reduce((sum, o) => sum + (o.order_items?.reduce((s, i) => s + (i.quantity || 1), 0) || 0), 0);
+
+  // Group revenue by month
+  const revenueByMonth = successOrdersList.reduce((acc, o) => {
+    if (!o.createddate) return acc;
+    const month = new Date(o.createddate).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+    acc[month] = (acc[month] || 0) + (o.total_amount || 0);
+    return acc;
+  }, {});
+  const monthKeys = Object.keys(revenueByMonth).slice(-6); // last 6 months
+  const maxRevenue = Math.max(...monthKeys.map(k => revenueByMonth[k]), 1);
+
+  // Top selling games from order_items
+  const gameSalesMap = {};
+  successOrdersList.forEach(o => {
+    (o.order_items || []).forEach(item => {
+      const title = item.games?.title || `Game #${(item.game_id || '').substring(0, 6)}`;
+      const img = item.games?.image_url || '';
+      if (!gameSalesMap[title]) gameSalesMap[title] = { title, img, qty: 0, revenue: 0 };
+      gameSalesMap[title].qty += item.quantity || 1;
+      gameSalesMap[title].revenue += item.price || 0;
+    });
+  });
+  const topGames = Object.values(gameSalesMap).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+
+
   return (
-    <div className="page-container container">
-      <div className="admin-header">
-        <h1 className="section-title"><HiOutlineShieldCheck /> Admin Panel</h1>
-      </div>
+    <div className="admin-shell">
+      {/* Sidebar backdrop (mobile) */}
+      {sidebarOpen && (
+        <div className="admin-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />
+      )}
 
-      <div className="admin-tabs">
-        <button className={`admin-tab ${activeTab === 'games' ? 'active' : ''}`} onClick={() => setActiveTab('games')}>
-          Game ({games.length})
-        </button>
-        <button className={`admin-tab ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
-          Pesanan ({orders.length})
-        </button>
-      </div>
+      {/* Sidebar */}
+      <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="admin-sidebar-logo">
+          <HiOutlineShieldCheck className="admin-sidebar-logo-icon" />
+          <span>Admin Panel</span>
+        </div>
 
-      {activeTab === 'games' && (
-        <div className="admin-section animate-fadeIn">
-          <div className="admin-toolbar">
-            <button className="btn btn-primary" onClick={openAddModal}>
-              <HiOutlinePlus /> Tambah Game
+        <nav className="admin-sidebar-nav">
+          {navItems.map(item => (
+            <button
+              key={item.key}
+              className={`admin-sidebar-item ${activeTab === item.key ? 'active' : ''}`}
+              onClick={() => { setActiveTab(item.key); setSidebarOpen(false); }}
+            >
+              {item.icon}
+              <span>{item.label}</span>
             </button>
-          </div>
+          ))}
+        </nav>
 
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Game</th>
-                  <th>Harga</th>
-                  <th>Diskon</th>
-                  <th>Rating</th>
-                  <th>Kategori</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {games.map(game => (
-                  <tr key={game.game_id}>
-                    <td>
-                      <div className="admin-game-cell">
-                        <img
-                          src={game.image_url}
-                          alt=""
-                          className="admin-game-thumb"
-                          onError={(e) => {
-                            if (!e.target.dataset.hasError) {
-                              e.target.dataset.hasError = 'true';
-                              e.target.src = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50"><rect fill="#1A1A25" width="40" height="50"/><text fill="#6C5CE7" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">G</text></svg>')}`;
-                            }
-                          }}
-                        />
-                        <div>
-                          <span className="admin-game-title">{game.title}</span>
-                          <span className="admin-game-slug">{game.platform}</span>
+        <div className="admin-sidebar-footer">
+          <Link to="/" className="admin-sidebar-item">
+            <HiOutlineHome />
+            <span>Kembali ke Toko</span>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="admin-main">
+        {/* Top Bar */}
+        <header className="admin-topbar">
+          <button className="admin-topbar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <span /><span /><span />
+          </button>
+          <div className="admin-topbar-title">
+            {navItems.find(i => i.key === activeTab)?.label || 'Admin'}
+          </div>
+          <button className="admin-topbar-refresh" onClick={fetchData} title="Refresh data">
+            <HiOutlineRefresh />
+          </button>
+        </header>
+
+        <div className="admin-content">
+
+          {/* ─── DASHBOARD ─── */}
+          {activeTab === 'dashboard' && (
+            <div className="animate-fadeIn">
+              <div className="admin-stat-grid">
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon games-icon">
+                    <HiOutlineCollection />
+                  </div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Total Game</span>
+                    <span className="admin-stat-value">{games.length}</span>
+                  </div>
+                </div>
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon orders-icon">
+                    <HiOutlineShoppingCart />
+                  </div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Total Orders</span>
+                    <span className="admin-stat-value">{orders.length}</span>
+                  </div>
+                </div>
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon success-icon">
+                    <HiOutlineStar />
+                  </div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Order Berhasil</span>
+                    <span className="admin-stat-value">{successOrders}</span>
+                  </div>
+                </div>
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon revenue-icon">
+                    <HiOutlineCurrencyDollar />
+                  </div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Total Pendapatan</span>
+                    <span className="admin-stat-value admin-stat-revenue">{formatPrice(totalRevenue)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="admin-dashboard-tables">
+                <div className="admin-card">
+                  <div className="admin-card-header">
+                    <h3>Game Terbaru</h3>
+                    <button className="btn btn-outline btn-sm" onClick={() => setActiveTab('games')}>Lihat Semua</button>
+                  </div>
+                  <div className="admin-table-wrapper">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Game</th>
+                          <th>Harga</th>
+                          <th>Rating</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {games.slice(0, 5).map(game => (
+                          <tr key={game.game_id}>
+                            <td>
+                              <div className="admin-game-cell">
+                                <img src={game.image_url} alt="" className="admin-game-thumb"
+                                  onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50"><rect fill="#1A1A25" width="40" height="50"/><text fill="#6C5CE7" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">G</text></svg>')}`; }}} />
+                                <div>
+                                  <span className="admin-game-title">{game.title}</span>
+                                  <span className="admin-game-slug">{game.platform}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td>{formatPrice(game.price)}</td>
+                            <td>⭐ {Number(game.rating).toFixed(1)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="admin-card">
+                  <div className="admin-card-header">
+                    <h3>Order Terbaru</h3>
+                    <button className="btn btn-outline btn-sm" onClick={() => setActiveTab('orders')}>Lihat Semua</button>
+                  </div>
+                  <div className="admin-table-wrapper">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>Order Code</th>
+                          <th>Total</th>
+                          <th>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.slice(0, 5).map(order => (
+                          <tr key={order.id}>
+                            <td><code className="admin-code">{order.order_code}</code></td>
+                            <td>{formatPrice(order.total_amount)}</td>
+                            <td>
+                              <span className={`badge badge-${(STATUS_MAP[order.status] || {}).type || 'danger'}`}>
+                                {(STATUS_MAP[order.status] || {}).label || 'Unknown'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── GAMES ─── */}
+          {activeTab === 'games' && (
+            <div className="animate-fadeIn">
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3>Daftar Game <span className="admin-badge-count">{games.length}</span></h3>
+                  <button className="btn btn-primary btn-sm" onClick={openAddModal}>
+                    <HiOutlinePlus /> Tambah Game
+                  </button>
+                </div>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Game</th>
+                        <th>Harga</th>
+                        <th>Diskon</th>
+                        <th>Rating</th>
+                        <th>Kategori</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        <tr><td colSpan="6" className="admin-table-empty">Memuat data...</td></tr>
+                      ) : games.length === 0 ? (
+                        <tr><td colSpan="6" className="admin-table-empty">Belum ada game</td></tr>
+                      ) : games.map(game => (
+                        <tr key={game.game_id}>
+                          <td>
+                            <div className="admin-game-cell">
+                              <img src={game.image_url} alt="" className="admin-game-thumb"
+                                onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50"><rect fill="#1A1A25" width="40" height="50"/><text fill="#6C5CE7" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">G</text></svg>')}`; }}} />
+                              <div>
+                                <span className="admin-game-title">{game.title}</span>
+                                <span className="admin-game-slug">{game.platform}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td>{formatPrice(game.price)}</td>
+                          <td>{game.discount > 0 ? <span className="badge badge-warning">{game.discount}%</span> : <span className="text-muted">-</span>}</td>
+                          <td>⭐ {Number(game.rating).toFixed(1)}</td>
+                          <td>{game.category ? <span className="admin-category-tag">{game.category}</span> : '-'}</td>
+                          <td>
+                            <div className="admin-actions">
+                              <button className="btn btn-outline btn-sm" onClick={() => openEditModal(game)} title="Edit">
+                                <HiOutlinePencil />
+                              </button>
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(game.game_id, game.title)} title="Hapus">
+                                <HiOutlineTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── ORDERS ─── */}
+          {activeTab === 'orders' && (
+            <div className="animate-fadeIn">
+              <div className="admin-orders-summary">
+                <div className="admin-order-pill pending">
+                  <span>{filteredOrders.filter(o => o.status === 1).length}</span> Menunggu
+                </div>
+                <div className="admin-order-pill success">
+                  <span>{filteredOrders.filter(o => o.status === 2).length}</span> Berhasil
+                </div>
+                <div className="admin-order-pill total">
+                  <span>{filteredOrders.length}</span>
+                  {hasActiveFilters ? 'Hasil Filter' : 'Total'}
+                </div>
+              </div>
+
+              {/* Export buttons — outside the filter card */}
+              <div className="admin-filter-exports-row">
+                <button className="btn btn-outline btn-sm" onClick={exportCSV} title="Export ke Excel/CSV">
+                  <HiOutlineDownload /> Excel
+                </button>
+                <button className="btn btn-outline btn-sm" onClick={exportPDF} title="Export ke PDF">
+                  <HiOutlineDocumentText /> PDF
+                </button>
+              </div>
+
+              {/* Filter card */}
+              <div className="admin-filter-bar">
+                <div className="admin-filter-search">
+                  <HiOutlineSearch className="admin-filter-icon" />
+                  <input
+                    type="text"
+                    className="admin-filter-input"
+                    placeholder="Cari order code, email, metode..."
+                    value={orderSearch}
+                    onChange={e => setOrderSearch(e.target.value)}
+                  />
+                </div>
+
+                <div className="admin-filter-group">
+                  <HiOutlineFilter className="admin-filter-icon-sm" />
+                  <select
+                    className="admin-filter-select"
+                    value={orderStatus}
+                    onChange={e => setOrderStatus(e.target.value)}
+                  >
+                    <option value="all">Semua Status</option>
+                    <option value="1">Menunggu</option>
+                    <option value="2">Berhasil</option>
+                    <option value="3">Kadaluarsa</option>
+                    <option value="4">Dibatalkan</option>
+                    <option value="5">Gagal</option>
+                  </select>
+                </div>
+
+                <div className="admin-filter-group">
+                  <label className="admin-filter-label">Dari</label>
+                  <input
+                    type="date"
+                    className="admin-filter-date"
+                    value={orderDateFrom}
+                    onChange={e => setOrderDateFrom(e.target.value)}
+                  />
+                </div>
+
+                <div className="admin-filter-group">
+                  <label className="admin-filter-label">Sampai</label>
+                  <input
+                    type="date"
+                    className="admin-filter-date"
+                    value={orderDateTo}
+                    onChange={e => setOrderDateTo(e.target.value)}
+                  />
+                </div>
+
+                {hasActiveFilters && (
+                  <button className="admin-filter-reset" onClick={resetFilters}>
+                    <HiOutlineX /> Reset
+                  </button>
+                )}
+              </div>
+
+
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3>
+                    Pesanan
+                    <span className="admin-badge-count">{filteredOrders.length}</span>
+                    {hasActiveFilters && <span className="admin-filter-active-tag">Terfilter</span>}
+                  </h3>
+                </div>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Order Code</th>
+                        <th>Tanggal</th>
+                        <th>Items</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Metode</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {loading ? (
+                        <tr><td colSpan="6" className="admin-table-empty">Memuat data...</td></tr>
+                      ) : filteredOrders.length === 0 ? (
+                        <tr><td colSpan="6" className="admin-table-empty">
+                          {hasActiveFilters ? '🔍 Tidak ada pesanan yang sesuai filter' : 'Belum ada pesanan'}
+                        </td></tr>
+                      ) : filteredOrders.map(order => (
+                        <tr key={order.id}>
+                          <td><code className="admin-code">{order.order_code}</code></td>
+                          <td className="text-sm">{new Date(order.createddate).toLocaleDateString('id-ID')}</td>
+                          <td>
+                            {(() => {
+                              const count = getItemCount(order);
+                              return count !== null
+                                ? <span>{count} item</span>
+                                : <span className="text-muted" title="Data item tidak tersedia (RLS)">–</span>;
+                            })()}
+                          </td>
+                          <td><strong>{formatPrice(order.total_amount)}</strong></td>
+                          <td>
+                            <span className={`badge badge-${(STATUS_MAP[order.status] || {}).type || 'danger'}`}>
+                              {(STATUS_MAP[order.status] || {}).label || 'Unknown'}
+                            </span>
+                          </td>
+                          <td>{order.payment_method || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── LAPORAN PENJUALAN ─── */}
+          {activeTab === 'laporan' && (
+            <div className="animate-fadeIn">
+              {/* Summary stats */}
+              <div className="admin-stat-grid" style={{ marginBottom: 'var(--spacing-xl)' }}>
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon revenue-icon"><HiOutlineCurrencyDollar /></div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Total Pendapatan</span>
+                    <span className="admin-stat-value admin-stat-revenue">{formatPrice(totalRevenue)}</span>
+                  </div>
+                </div>
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon success-icon"><HiOutlineStar /></div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Order Berhasil</span>
+                    <span className="admin-stat-value">{successOrders}</span>
+                  </div>
+                </div>
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon orders-icon"><HiOutlineShoppingCart /></div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Total Item Terjual</span>
+                    <span className="admin-stat-value">{totalItems > 0 ? totalItems : '–'}</span>
+                  </div>
+                </div>
+                <div className="admin-stat-card">
+                  <div className="admin-stat-icon games-icon"><HiOutlineCollection /></div>
+                  <div className="admin-stat-body">
+                    <span className="admin-stat-label">Rata-rata / Order</span>
+                    <span className="admin-stat-value admin-stat-revenue">
+                      {successOrders > 0 ? formatPrice(Math.round(totalRevenue / successOrders)) : '–'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Revenue by Month chart */}
+              <div className="admin-card" style={{ marginBottom: 'var(--spacing-xl)' }}>
+                <div className="admin-card-header">
+                  <h3>Pendapatan per Bulan <span className="admin-badge-count">{monthKeys.length} bulan</span></h3>
+                </div>
+                <div className="admin-chart-area">
+                  {monthKeys.length === 0 ? (
+                    <div className="admin-table-empty">Belum ada data pendapatan</div>
+                  ) : (
+                    <div className="admin-bar-chart">
+                      {monthKeys.map(month => (
+                        <div key={month} className="admin-bar-item">
+                          <div className="admin-bar-value">{formatPrice(revenueByMonth[month])}</div>
+                          <div className="admin-bar-wrap">
+                            <div
+                              className="admin-bar-fill"
+                              style={{ height: `${Math.max(8, (revenueByMonth[month] / maxRevenue) * 100)}%` }}
+                            />
+                          </div>
+                          <div className="admin-bar-label">{month}</div>
                         </div>
-                      </div>
-                    </td>
-                    <td>{formatPrice(game.price)}</td>
-                    <td>{game.discount > 0 ? `${game.discount}%` : '-'}</td>
-                    <td>⭐ {Number(game.rating).toFixed(1)}</td>
-                    <td>{game.category || '-'}</td>
-                    <td>
-                      <div className="admin-actions">
-                        <button className="btn btn-outline btn-sm" onClick={() => openEditModal(game)}>
-                          <HiOutlinePencil />
-                        </button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleDelete(game.game_id, game.title)}>
-                          <HiOutlineTrash />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
 
-      {activeTab === 'orders' && (
-        <div className="admin-section animate-fadeIn">
-          <div className="admin-table-wrapper">
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Order Code</th>
-                  <th>Tanggal</th>
-                  <th>Items</th>
-                  <th>Total</th>
-                  <th>Status</th>
-                  <th>Metode</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map(order => (
-                  <tr key={order.id}>
-                    <td><code>{order.order_code}</code></td>
-                    <td className="text-sm">{new Date(order.createddate).toLocaleDateString('id-ID')}</td>
-                    <td>{order.order_items?.length || 0} item</td>
-                    <td>{formatPrice(order.total_amount)}</td>
-                    <td>
-                      <span className={`badge badge-${(STATUS_MAP[order.status] || {}).type || 'danger'}`}>
-                        {(STATUS_MAP[order.status] || {}).label || 'Unknown'}
-                      </span>
-                    </td>
-                    <td>{order.payment_method || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
+              {/* Top Games */}
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3>Game Terlaris <span className="admin-badge-count">Top {topGames.length}</span></h3>
+                </div>
+                {topGames.length === 0 ? (
+                  <div className="admin-table-empty" style={{ padding: 32 }}>
+                    {orders.some(o => o.status === 2) ? 'Data item belum tersedia (server perlu di-restart)' : 'Belum ada penjualan'}
+                  </div>
+                ) : (
+                  <div className="admin-table-wrapper">
+                    <table className="admin-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Game</th>
+                          <th>Qty Terjual</th>
+                          <th>Total Revenue</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topGames.map((g, i) => (
+                          <tr key={g.title}>
+                            <td><span className="admin-rank-badge">{i + 1}</span></td>
+                            <td>
+                              <div className="admin-game-cell">
+                                {g.img && (
+                                  <img src={g.img} alt="" className="admin-game-thumb"
+                                    onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.style.display = 'none'; }}} />
+                                )}
+                                <span className="admin-game-title">{g.title}</span>
+                              </div>
+                            </td>
+                            <td><strong>{g.qty}</strong> unit</td>
+                            <td><strong>{formatPrice(g.revenue)}</strong></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
-      {/* Modal */}
+        </div>
+      </div>
+
+      {/* ─── MODAL ─── */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content animate-scaleIn" onClick={(e) => e.stopPropagation()}>
@@ -287,32 +787,27 @@ export default function AdminPanel() {
                 <div className="form-group">
                   <label className="form-label">Judul *</label>
                   <input className="form-input" required value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Kategori</label>
                   <input className="form-input" placeholder="Action, RPG, dll" value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Harga (IDR) *</label>
                   <input className="form-input" type="number" required value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Diskon (%)</label>
                   <input className="form-input" type="number" min="0" max="100" value={formData.discount}
-                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, discount: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Cover Image URL</label>
                   <input className="form-input" value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Platform</label>
@@ -329,26 +824,22 @@ export default function AdminPanel() {
                 <div className="form-group">
                   <label className="form-label">Developer</label>
                   <input className="form-input" value={formData.developer}
-                    onChange={(e) => setFormData({ ...formData, developer: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, developer: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Publisher</label>
                   <input className="form-input" value={formData.publisher}
-                    onChange={(e) => setFormData({ ...formData, publisher: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, publisher: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Tanggal Rilis</label>
                   <input className="form-input" type="date" value={formData.release_date}
-                    onChange={(e) => setFormData({ ...formData, release_date: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, release_date: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Rating (0-5)</label>
                   <input className="form-input" type="number" step="0.1" min="0" max="5" value={formData.rating}
-                    onChange={(e) => setFormData({ ...formData, rating: e.target.value })}
-                  />
+                    onChange={(e) => setFormData({ ...formData, rating: e.target.value })} />
                 </div>
               </div>
 
@@ -356,24 +847,19 @@ export default function AdminPanel() {
                 <label className="form-label">Deskripsi</label>
                 <textarea className="form-input" rows={3} value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  style={{ resize: 'vertical' }}
-                />
+                  style={{ resize: 'vertical' }} />
               </div>
-
               <div className="form-group" style={{ marginTop: 12 }}>
                 <label className="form-label">Minimum Requirements</label>
                 <textarea className="form-input" rows={2} value={formData.min_requirements}
                   onChange={(e) => setFormData({ ...formData, min_requirements: e.target.value })}
-                  style={{ resize: 'vertical' }}
-                />
+                  style={{ resize: 'vertical' }} />
               </div>
-
               <div className="form-group" style={{ marginTop: 12 }}>
                 <label className="form-label">Recommended Requirements</label>
                 <textarea className="form-input" rows={2} value={formData.rec_requirements}
                   onChange={(e) => setFormData({ ...formData, rec_requirements: e.target.value })}
-                  style={{ resize: 'vertical' }}
-                />
+                  style={{ resize: 'vertical' }} />
               </div>
 
               <div className="modal-actions">

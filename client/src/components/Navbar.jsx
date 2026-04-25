@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HiOutlineShoppingCart, HiOutlineUser, HiOutlineSearch, HiMenu, HiX, HiOutlineLogout, HiOutlineCollection, HiOutlineClock, HiOutlineShieldCheck } from 'react-icons/hi';
+import { HiOutlineShoppingCart, HiOutlineUser, HiOutlineSearch, HiMenu, HiX, HiOutlineLogout, HiOutlineCollection, HiOutlineClock, HiOutlineShieldCheck, HiOutlineHome, HiOutlineLogin } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import './Navbar.css';
@@ -10,7 +10,8 @@ export default function Navbar() {
   const { cartCount } = useCart();
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuClosing, setMenuClosing] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [avatarError, setAvatarError] = useState(false);
@@ -31,12 +32,37 @@ export default function Navbar() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
+  const openMenu = useCallback(() => {
+    setMenuClosing(false);
+    setMenuVisible(true);
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setMenuClosing(true);
+    setTimeout(() => {
+      setMenuVisible(false);
+      setMenuClosing(false);
+    }, 250);
+  }, []);
+
+  const toggleMenu = useCallback(() => {
+    if (menuVisible && !menuClosing) {
+      closeMenu();
+    } else if (!menuVisible) {
+      openMenu();
+    }
+  }, [menuVisible, menuClosing, openMenu, closeMenu]);
+
+  const handleMenuClick = useCallback(() => {
+    closeMenu();
+  }, [closeMenu]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
-      setMenuOpen(false);
+      closeMenu();
     }
   };
 
@@ -44,6 +70,7 @@ export default function Navbar() {
     await signOut();
     navigate('/');
     setProfileMenuOpen(false);
+    closeMenu();
   };
 
   const getAvatarUrl = () => {
@@ -51,6 +78,7 @@ export default function Navbar() {
   };
 
   return (
+    <>
     <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`} id="navbar">
       <div className="navbar-container container">
         <Link to="/" className="navbar-logo" id="navbar-logo">
@@ -133,44 +161,90 @@ export default function Navbar() {
             </Link>
           )}
 
-          <button className="mobile-menu-btn" onClick={() => setMenuOpen(!menuOpen)}>
-            {menuOpen ? <HiX /> : <HiMenu />}
+          <button className="mobile-menu-btn" onClick={toggleMenu}>
+            {menuVisible && !menuClosing ? <HiX /> : <HiMenu />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="mobile-menu animate-fadeInDown">
-          <form className="mobile-search" onSubmit={handleSearch}>
-            <HiOutlineSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Cari game..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-          </form>
-          <Link to="/" className="mobile-menu-link" onClick={() => setMenuOpen(false)}>Beranda</Link>
-          <Link to="/cart" className="mobile-menu-link" onClick={() => setMenuOpen(false)}>
-            Keranjang {cartCount > 0 && `(${cartCount})`}
-          </Link>
-          {user ? (
-            <>
-              <Link to="/profile" className="mobile-menu-link" onClick={() => setMenuOpen(false)}>Profil</Link>
-              <Link to="/library" className="mobile-menu-link" onClick={() => setMenuOpen(false)}>Perpustakaan</Link>
-              <Link to="/orders" className="mobile-menu-link" onClick={() => setMenuOpen(false)}>Riwayat Pesanan</Link>
-              {isAdmin && (
-                <Link to="/admin" className="mobile-menu-link" onClick={() => setMenuOpen(false)}>Admin Panel</Link>
-              )}
-              <button className="mobile-menu-link logout" onClick={handleSignOut}>Keluar</button>
-            </>
-          ) : (
-            <Link to="/login" className="mobile-menu-link" onClick={() => setMenuOpen(false)}>Masuk</Link>
-          )}
+      {menuVisible && (
+        <div className={`mobile-menu ${menuClosing ? 'mobile-menu-closing' : 'mobile-menu-opening'}`}>
+            {user && (
+              <div className="mobile-profile-header">
+                <div className="mobile-profile-avatar">
+                  {getAvatarUrl() && !avatarError ? (
+                    <img
+                      src={getAvatarUrl()}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : (
+                    <HiOutlineUser />
+                  )}
+                </div>
+                <div className="mobile-profile-info">
+                  <span className="mobile-profile-name">
+                    {profile?.full_name || user.email?.split('@')[0]}
+                  </span>
+                  <span className="mobile-profile-email">{user.email}</span>
+                </div>
+              </div>
+            )}
+            <form className="mobile-search" onSubmit={handleSearch}>
+              <HiOutlineSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="Cari game..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="search-input"
+              />
+            </form>
+            <Link to="/" className="mobile-menu-link" onClick={handleMenuClick}>
+              <HiOutlineHome /> Beranda
+            </Link>
+            <Link to="/cart" className="mobile-menu-link" onClick={handleMenuClick}>
+              <HiOutlineShoppingCart /> Keranjang {cartCount > 0 && <span className="mobile-cart-badge">{cartCount}</span>}
+            </Link>
+            {user ? (
+              <>
+                <Link to="/profile" className="mobile-menu-link" onClick={handleMenuClick}>
+                  <HiOutlineUser /> Profil Saya
+                </Link>
+                <Link to="/library" className="mobile-menu-link" onClick={handleMenuClick}>
+                  <HiOutlineCollection /> Perpustakaan
+                </Link>
+                <Link to="/orders" className="mobile-menu-link" onClick={handleMenuClick}>
+                  <HiOutlineClock /> Riwayat Pesanan
+                </Link>
+                {isAdmin && (
+                  <Link to="/admin" className="mobile-menu-link admin" onClick={handleMenuClick}>
+                    <HiOutlineShieldCheck /> Admin Panel
+                  </Link>
+                )}
+                <div className="mobile-menu-divider" />
+                <button className="mobile-menu-link logout" onClick={handleSignOut}>
+                  <HiOutlineLogout /> Keluar
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="mobile-menu-link" onClick={handleMenuClick}>
+                <HiOutlineLogin /> Masuk
+              </Link>
+            )}
         </div>
       )}
     </nav>
+
+    {/* Backdrop — outside nav, closes menu on click */}
+    {menuVisible && (
+      <div
+        className={`mobile-backdrop ${menuClosing ? 'mobile-backdrop-closing' : ''}`}
+        onClick={handleMenuClick}
+      />
+    )}
+    </>
   );
 }
