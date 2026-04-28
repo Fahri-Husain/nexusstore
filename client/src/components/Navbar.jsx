@@ -1,26 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { HiOutlineShoppingCart, HiOutlineUser, HiOutlineSearch, HiMenu, HiX, HiOutlineLogout, HiOutlineCollection, HiOutlineClock, HiOutlineShieldCheck, HiOutlineHome, HiOutlineLogin } from 'react-icons/hi';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { HiOutlineShoppingCart, HiOutlineUser, HiMenu, HiX, HiOutlineLogout, HiOutlineCollection, HiOutlineClock, HiOutlineShieldCheck, HiOutlineHome, HiOutlineLogin } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedLink, AnimatedButton } from '../lib/motionUtils';
 import './Navbar.css';
 
 export default function Navbar() {
   const { user, profile, isAdmin, signOut } = useAuth();
   const { cartCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { pathname } = location;
   const [scrolled, setScrolled] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [menuClosing, setMenuClosing] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [avatarError, setAvatarError] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    
     window.addEventListener('scroll', handleScroll);
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [pathname]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -32,89 +38,65 @@ export default function Navbar() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const openMenu = useCallback(() => {
-    setMenuClosing(false);
-    setMenuVisible(true);
-  }, []);
-
-  const closeMenu = useCallback(() => {
-    setMenuClosing(true);
-    setTimeout(() => {
-      setMenuVisible(false);
-      setMenuClosing(false);
-    }, 250);
-  }, []);
-
-  const toggleMenu = useCallback(() => {
-    if (menuVisible && !menuClosing) {
-      closeMenu();
-    } else if (!menuVisible) {
-      openMenu();
-    }
-  }, [menuVisible, menuClosing, openMenu, closeMenu]);
-
-  const handleMenuClick = useCallback(() => {
-    closeMenu();
-  }, [closeMenu]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-      closeMenu();
-    }
-  };
-
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
     setProfileMenuOpen(false);
-    closeMenu();
+    setMenuVisible(false);
   };
 
   const getAvatarUrl = () => {
     return profile?.avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture;
   };
 
+  const springConfig = { type: "spring", stiffness: 300, damping: 30 };
+
   return (
     <>
-    <nav className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`} id="navbar">
+    <motion.nav 
+      className={`navbar glass-capsule ${scrolled ? 'scrolled' : ''}`}
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ ...springConfig, delay: 0.1 }}
+    >
       <div className="navbar-container container">
-        <Link to="/" className="navbar-logo" id="navbar-logo">
-          <div className="logo-icon">N</div>
-          <span className="logo-text">Nexus Store</span>
+        <Link to="/" className="navbar-logo">
+          <span className="logo-text tracking-wide">NEXUS</span>
         </Link>
 
-        <form className="navbar-search" onSubmit={handleSearch}>
-          <HiOutlineSearch className="search-icon" />
-          <input
-            type="text"
-            placeholder="Cari game..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-            id="navbar-search-input"
-          />
-        </form>
+        <div className="navbar-links">
+          <Link to="/" className={`nav-link ${pathname === '/' ? 'active' : ''}`}>HOME</Link>
+          <Link to="/collection" className={`nav-link ${pathname === '/collection' ? 'active' : ''}`}>COLLECTION</Link>
+          <Link to="/about" className={`nav-link ${pathname === '/about' ? 'active' : ''}`}>ABOUT</Link>
+        </div>
 
         <div className="navbar-actions">
-          <Link to="/cart" className="navbar-cart" id="navbar-cart">
-            <HiOutlineShoppingCart />
-            {cartCount > 0 && (
-              <span className="cart-badge">{cartCount}</span>
-            )}
-          </Link>
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+            <Link to="/cart" className="navbar-icon-btn">
+              <HiOutlineShoppingCart />
+              <AnimatePresence>
+                {cartCount > 0 && (
+                  <motion.span 
+                    className="cart-badge"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    {cartCount}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Link>
+          </motion.div>
 
           {user ? (
             <div className="profile-dropdown">
-              <button
+              <AnimatedButton
                 className="profile-btn"
                 onClick={(e) => {
                   e.stopPropagation();
                   setProfileMenuOpen(!profileMenuOpen);
                 }}
-                id="navbar-profile-btn"
               >
                 {getAvatarUrl() && !avatarError ? (
                   <img
@@ -127,124 +109,108 @@ export default function Navbar() {
                 ) : (
                   <HiOutlineUser />
                 )}
-                <span className="profile-name">
-                  {profile?.full_name || user.email?.split('@')[0]}
-                </span>
-              </button>
+              </AnimatedButton>
 
-              {profileMenuOpen && (
-                <div className="profile-menu animate-fadeIn">
-                  <Link to="/profile" className="profile-menu-item" onClick={() => setProfileMenuOpen(false)}>
-                    <HiOutlineUser /> Profil Saya
-                  </Link>
-                  <Link to="/library" className="profile-menu-item" onClick={() => setProfileMenuOpen(false)}>
-                    <HiOutlineCollection /> Perpustakaan
-                  </Link>
-                  <Link to="/orders" className="profile-menu-item" onClick={() => setProfileMenuOpen(false)}>
-                    <HiOutlineClock /> Riwayat Pesanan
-                  </Link>
-                  {isAdmin && (
-                    <Link to="/admin" className="profile-menu-item admin-item" onClick={() => setProfileMenuOpen(false)}>
-                      <HiOutlineShieldCheck /> Admin Panel
-                    </Link>
-                  )}
-                  <div className="profile-menu-divider" />
-                  <button className="profile-menu-item logout-item" onClick={handleSignOut}>
-                    <HiOutlineLogout /> Keluar
-                  </button>
-                </div>
-              )}
+              <AnimatePresence>
+                {profileMenuOpen && (
+                  <motion.div 
+                    className="profile-menu"
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                  >
+                    <div className="profile-menu-header">
+                      <span className="profile-name">{profile?.full_name || user.email?.split('@')[0]}</span>
+                    </div>
+                    <Link to="/profile" className="profile-menu-item" onClick={() => setProfileMenuOpen(false)}>Profile</Link>
+                    <Link to="/library" className="profile-menu-item" onClick={() => setProfileMenuOpen(false)}>Library</Link>
+                    <Link to="/orders" className="profile-menu-item" onClick={() => setProfileMenuOpen(false)}>Orders</Link>
+                    {isAdmin && (
+                      <Link to="/admin" className="profile-menu-item admin-item" onClick={() => setProfileMenuOpen(false)}>Admin</Link>
+                    )}
+                    <div className="profile-menu-divider" />
+                    <button className="profile-menu-item logout-item" onClick={handleSignOut}>Sign Out</button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
-            <Link to="/login" className="btn btn-primary btn-sm" id="navbar-login-btn">
-              Masuk
-            </Link>
+            <AnimatedLink to="/login" className="btn btn-primary btn-shop">
+              SHOP NOW
+            </AnimatedLink>
           )}
 
-          <button className="mobile-menu-btn" onClick={toggleMenu}>
-            {menuVisible && !menuClosing ? <HiX /> : <HiMenu />}
+          <button className="mobile-menu-btn" onClick={() => setMenuVisible(true)}>
+            <HiMenu />
           </button>
         </div>
       </div>
+    </motion.nav>
 
-      {/* Mobile Menu */}
+    {/* Mobile Menu */}
+    <AnimatePresence>
       {menuVisible && (
-        <div className={`mobile-menu ${menuClosing ? 'mobile-menu-closing' : 'mobile-menu-opening'}`}>
-            {user && (
-              <div className="mobile-profile-header">
-                <div className="mobile-profile-avatar">
-                  {getAvatarUrl() && !avatarError ? (
-                    <img
-                      src={getAvatarUrl()}
-                      alt=""
-                      referrerPolicy="no-referrer"
-                      onError={() => setAvatarError(true)}
-                    />
-                  ) : (
-                    <HiOutlineUser />
-                  )}
+        <>
+          <motion.div
+            className="mobile-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setMenuVisible(false)}
+          />
+          <motion.div 
+            className="mobile-menu"
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
+            transition={springConfig}
+          >
+            <div className="mobile-menu-header">
+              <span className="logo-text tracking-wide">NEXUS</span>
+              <button className="mobile-close-btn" onClick={() => setMenuVisible(false)}>
+                <HiX />
+              </button>
+            </div>
+            
+            <div className="mobile-menu-content">
+              {user && (
+                <div className="mobile-profile">
+                  <div className="mobile-avatar">
+                    {getAvatarUrl() && !avatarError ? (
+                      <img src={getAvatarUrl()} alt="" onError={() => setAvatarError(true)} />
+                    ) : (
+                      <HiOutlineUser />
+                    )}
+                  </div>
+                  <span>{profile?.full_name || user.email?.split('@')[0]}</span>
                 </div>
-                <div className="mobile-profile-info">
-                  <span className="mobile-profile-name">
-                    {profile?.full_name || user.email?.split('@')[0]}
-                  </span>
-                  <span className="mobile-profile-email">{user.email}</span>
-                </div>
-              </div>
-            )}
-            <form className="mobile-search" onSubmit={handleSearch}>
-              <HiOutlineSearch className="search-icon" />
-              <input
-                type="text"
-                placeholder="Cari game..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-            </form>
-            <Link to="/" className="mobile-menu-link" onClick={handleMenuClick}>
-              <HiOutlineHome /> Beranda
-            </Link>
-            <Link to="/cart" className="mobile-menu-link" onClick={handleMenuClick}>
-              <HiOutlineShoppingCart /> Keranjang {cartCount > 0 && <span className="mobile-cart-badge">{cartCount}</span>}
-            </Link>
-            {user ? (
-              <>
-                <Link to="/profile" className="mobile-menu-link" onClick={handleMenuClick}>
-                  <HiOutlineUser /> Profil Saya
-                </Link>
-                <Link to="/library" className="mobile-menu-link" onClick={handleMenuClick}>
-                  <HiOutlineCollection /> Perpustakaan
-                </Link>
-                <Link to="/orders" className="mobile-menu-link" onClick={handleMenuClick}>
-                  <HiOutlineClock /> Riwayat Pesanan
-                </Link>
-                {isAdmin && (
-                  <Link to="/admin" className="mobile-menu-link admin" onClick={handleMenuClick}>
-                    <HiOutlineShieldCheck /> Admin Panel
-                  </Link>
-                )}
-                <div className="mobile-menu-divider" />
-                <button className="mobile-menu-link logout" onClick={handleSignOut}>
-                  <HiOutlineLogout /> Keluar
-                </button>
-              </>
-            ) : (
-              <Link to="/login" className="mobile-menu-link" onClick={handleMenuClick}>
-                <HiOutlineLogin /> Masuk
+              )}
+              
+              <Link to="/" className="mobile-link" onClick={() => setMenuVisible(false)}>HOME</Link>
+              <Link to="/collection" className="mobile-link" onClick={() => setMenuVisible(false)}>COLLECTION</Link>
+              <Link to="/about" className="mobile-link" onClick={() => setMenuVisible(false)}>ABOUT</Link>
+              <Link to="/cart" className="mobile-link" onClick={() => setMenuVisible(false)}>
+                CART {cartCount > 0 && <span className="badge">{cartCount}</span>}
               </Link>
-            )}
-        </div>
-      )}
-    </nav>
 
-    {/* Backdrop — outside nav, closes menu on click */}
-    {menuVisible && (
-      <div
-        className={`mobile-backdrop ${menuClosing ? 'mobile-backdrop-closing' : ''}`}
-        onClick={handleMenuClick}
-      />
-    )}
+              {user ? (
+                <>
+                  <div className="mobile-divider" />
+                  <Link to="/profile" className="mobile-link" onClick={() => setMenuVisible(false)}>PROFILE</Link>
+                  <Link to="/library" className="mobile-link" onClick={() => setMenuVisible(false)}>LIBRARY</Link>
+                  <Link to="/orders" className="mobile-link" onClick={() => setMenuVisible(false)}>ORDERS</Link>
+                  {isAdmin && <Link to="/admin" className="mobile-link admin" onClick={() => setMenuVisible(false)}>ADMIN</Link>}
+                  <button className="mobile-link logout" onClick={handleSignOut}>SIGN OUT</button>
+                </>
+              ) : (
+                <Link to="/login" className="mobile-link" onClick={() => setMenuVisible(false)}>SIGN IN</Link>
+              )}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
     </>
   );
 }

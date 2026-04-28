@@ -1,3 +1,4 @@
+/* ── Profile — Dark Premium ──────────────────────── */
 .profile-layout {
   max-width: 700px;
   width: 100%;
@@ -15,7 +16,7 @@
   align-items: center;
   gap: var(--spacing-lg);
   padding: var(--spacing-xl);
-  background: var(--gradient-card);
+  background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -32,6 +33,7 @@
   color: var(--text-secondary);
   overflow: hidden;
   flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(212, 168, 83, 0.15);
 }
 
 .profile-avatar-lg img {
@@ -41,8 +43,10 @@
 }
 
 .profile-header-info h2 {
+  font-family: var(--font-display);
   font-size: 1.3rem;
   margin-bottom: 4px;
+  color: var(--text-primary);
 }
 
 .profile-role {

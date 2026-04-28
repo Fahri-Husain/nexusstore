@@ -6,7 +6,7 @@ import './Footer.css';
 export default function Footer() {
   return (
     <footer className="footer" id="footer">
-      <div className="container">
+      <div className="footer-card">
         <div className="footer-grid">
           <div className="footer-brand">
             <div className="footer-logo">
@@ -27,17 +27,17 @@ export default function Footer() {
           <div className="footer-links">
             <h4 className="footer-title">Navigasi</h4>
             <Link to="/">Beranda</Link>
+            <Link to="/collection">Collection</Link>
             <Link to="/cart">Keranjang</Link>
             <Link to="/library">Perpustakaan</Link>
-            <Link to="/orders">Riwayat Pesanan</Link>
           </div>
 
           <div className="footer-links">
             <h4 className="footer-title">Kategori</h4>
-            <Link to="/?category=Action">Action</Link>
-            <Link to="/?category=RPG">RPG</Link>
-            <Link to="/?category=Adventure">Adventure</Link>
-            <Link to="/?category=Shooter">Shooter</Link>
+            <Link to="/collection?category=Action">Action</Link>
+            <Link to="/collection?category=RPG">RPG</Link>
+            <Link to="/collection?category=Adventure">Adventure</Link>
+            <Link to="/collection?category=Shooter">Shooter</Link>
           </div>
 
           <div className="footer-links">
@@ -56,7 +56,9 @@ export default function Footer() {
 
         <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} Nexus Store. Semua hak dilindungi.</p>
-          <p className="footer-payment-text">Pembayaran aman oleh Midtrans</p>
+          <div className="footer-bottom-links">
+            <p className="footer-payment-text">Pembayaran aman oleh Midtrans</p>
+          </div>
         </div>
       </div>
     </footer>

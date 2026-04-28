@@ -409,7 +409,7 @@ export default function AdminPanel() {
                             <td>
                               <div className="admin-game-cell">
                                 <img src={game.image_url} alt="" className="admin-game-thumb"
-                                  onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50"><rect fill="#1A1A25" width="40" height="50"/><text fill="#6C5CE7" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">G</text></svg>')}`; }}} />
+                                  onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50"><rect fill="#14141F" width="40" height="50"/><text fill="#D4A853" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">G</text></svg>')}`; }}} />
                                 <div>
                                   <span className="admin-game-title">{game.title}</span>
                                   <span className="admin-game-slug">{game.platform}</span>
@@ -491,7 +491,7 @@ export default function AdminPanel() {
                           <td>
                             <div className="admin-game-cell">
                               <img src={game.image_url} alt="" className="admin-game-thumb"
-                                onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50"><rect fill="#1A1A25" width="40" height="50"/><text fill="#6C5CE7" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">G</text></svg>')}`; }}} />
+                                onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="50"><rect fill="#14141F" width="40" height="50"/><text fill="#D4A853" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">G</text></svg>')}`; }}} />
                               <div>
                                 <span className="admin-game-title">{game.title}</span>
                                 <span className="admin-game-slug">{game.platform}</span>

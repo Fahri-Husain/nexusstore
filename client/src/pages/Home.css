@@ -1,208 +1,183 @@
-.home-page {
-  min-height: 100vh;
+/* ── Hero Spacing & Divider ──────────────────────── */
+.hero-wrapper {
+  margin-bottom: 120px; /* Large margin-bottom (mb-32 equivalent) */
 }
 
-/* ── Games Section ───────────────────────────────── */
-.games-section {
-  padding: var(--spacing-3xl) 0;
+.section-divider {
+  height: 1px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05); /* Subtle white border with 5% opacity */
+  margin-bottom: 120px; /* Space after divider */
 }
 
-.games-header {
-  margin-bottom: var(--spacing-xl);
+/* ── Featured Section Minimalist ───────────────────── */
+.featured-section {
+  padding: 0 0 var(--spacing-3xl) 0; /* Top padding is handled by the divider margin */
 }
 
-.games-controls {
+.featured-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
   gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
-  flex-wrap: wrap;
 }
 
-/* ── Genre Filters ───────────────────────────────── */
-.genre-filters {
-  display: flex;
+.featured-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.featured-subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin-top: 8px;
+}
+
+.featured-view-all {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  padding-bottom: 4px;
-  /* Extend to edges on mobile */
-  margin-left: 0;
-}
-
-.genre-filters::-webkit-scrollbar {
-  display: none;
-}
-
-.genre-filter-btn {
-  padding: 8px 18px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: 40px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.1em;
   transition: all var(--transition-normal);
-  cursor: pointer;
   white-space: nowrap;
-  flex-shrink: 0;
-  min-height: 38px;
 }
 
-.genre-filter-btn:hover {
-  border-color: var(--primary);
-  color: var(--text-primary);
-}
-
-.genre-filter-btn:active {
-  transform: scale(0.96);
-}
-
-.genre-filter-btn.active {
-  background: var(--gradient-primary);
-  border-color: transparent;
-  color: white;
-  box-shadow: var(--shadow-glow);
-}
-
-/* ── Sort Select ─────────────────────────────────── */
-.sort-select {
-  padding: 8px 16px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: 0.85rem;
-  cursor: pointer;
-  font-family: var(--font-family);
-  min-height: 38px;
-}
-
-.sort-select:focus {
-  border-color: var(--primary);
-}
-
-.sort-select option {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-}
-
-/* ── Search Result ───────────────────────────────── */
-.search-result-info {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--spacing-xl);
+.featured-view-all:hover {
+  gap: 12px;
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
 }
 
-.clear-search {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--accent-red);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: opacity var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.clear-search:hover {
-  opacity: 0.8;
-}
-
-/* ── Games Grid ──────────────────────────────────── */
-.games-grid {
+/* ── Asymmetric Bento Grid ───────────────────────── */
+.bento-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-lg);
+  gap: 40px;
+}
+
+.bento-item {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* First item spans 2 columns and takes up double height space roughly */
+.bento-item.bento-large {
+  grid-column: span 2;
+  grid-row: span 2;
 }
 
 .game-card-skeleton {
-  background: var(--bg-card);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
-/* ── Empty State ─────────────────────────────────── */
-.games-empty {
-  text-align: center;
-  padding: var(--spacing-3xl);
-  color: var(--text-secondary);
+/* ── CTA Section Minimalist ──────────────────────── */
+.cta-section {
+  padding: var(--spacing-3xl) 0 var(--spacing-3xl);
+  margin-top: 100px;
+  position: relative;
+  z-index: 10;
 }
 
-.empty-icon {
-  font-size: 4rem;
+.cta-card {
+  position: relative;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-3xl) var(--spacing-xl); /* Matched with Our Mission card */
+  text-align: center;
+  overflow: hidden;
+}
+
+.cta-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+
+.cta-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
   margin-bottom: var(--spacing-md);
 }
 
-.games-empty h3 {
-  font-size: 1.3rem;
-  margin-bottom: var(--spacing-sm);
-  color: var(--text-primary);
+.cta-desc {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto 64px; /* High-end significant margin for CTA button */
+  line-height: 1.7;
 }
 
 /* ── Responsive ──────────────────────────────────── */
 @media (max-width: 1024px) {
-  .games-grid {
+  .bento-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .bento-item.bento-large {
+    grid-column: span 2;
+    grid-row: span 2;
   }
 }
 
 @media (max-width: 768px) {
-  .games-grid {
+  .bento-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-md);
   }
 
-  .games-controls {
+  .bento-item.bento-large {
+    grid-column: span 2;
+    grid-row: span 1;
+  }
+
+  .featured-header {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
   }
 
-  .genre-filters {
-    margin-left: calc(-1 * var(--spacing-lg));
-    margin-right: calc(-1 * var(--spacing-lg));
-    padding-left: var(--spacing-lg);
-    padding-right: var(--spacing-lg);
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+  .cta-card {
+    padding: var(--spacing-2xl) var(--spacing-lg);
   }
 
-  .genre-filters::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sort-select {
-    width: 100%;
+  .cta-title {
+    font-size: 1.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .games-section {
-    padding: var(--spacing-xl) 0;
+  .featured-section {
+    padding: var(--spacing-2xl) 0;
   }
 
-  .games-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-sm);
+  .bento-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
   }
 
-  .genre-filter-btn {
-    padding: 7px 14px;
-    font-size: 0.8rem;
+  .bento-item.bento-large {
+    grid-column: span 1;
+  }
+
+  .cta-card {
+    padding: var(--spacing-xl) var(--spacing-md);
   }
 }

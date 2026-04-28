@@ -1,4 +1,4 @@
-/* ── Library ─────────────────────────────────────── */
+/* ── Library — Dark Premium ──────────────────────── */
 .library-empty {
   text-align: center;
   padding: var(--spacing-3xl) 0;
@@ -12,6 +12,7 @@
 
 .library-empty h2 {
   margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
 }
 
 .library-empty p {
@@ -39,8 +40,8 @@
 @media (hover: hover) {
   .library-card:hover {
     transform: translateY(-4px);
-    border-color: rgba(108, 92, 231, 0.3);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    border-color: rgba(212, 168, 83, 0.3);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 15px rgba(212, 168, 83, 0.08);
   }
 }
 
@@ -72,7 +73,7 @@
 .library-card-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,7 +91,7 @@
 @media (hover: none) {
   .library-card-overlay {
     opacity: 1;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -111,7 +112,7 @@
 
 @media (hover: hover) {
   .library-card-title:hover {
-    color: var(--primary-light);
+    color: var(--primary);
   }
 }
 

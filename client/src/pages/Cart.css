@@ -3,7 +3,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin-bottom: var(--spacing-lg);
   transition: color var(--transition-fast);
@@ -11,10 +11,10 @@
 }
 
 .back-link:hover {
-  color: var(--primary-light);
+  color: var(--primary);
 }
 
-/* ── Cart Page ───────────────────────────────────── */
+/* ── Cart Page — Dark Premium ────────────────────── */
 .cart-empty {
   text-align: center;
   padding: var(--spacing-3xl) 0;
@@ -28,6 +28,7 @@
 
 .cart-empty h2 {
   margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
 }
 
 .cart-empty p {
@@ -63,7 +64,7 @@
 
 @media (hover: hover) {
   .cart-item:hover {
-    border-color: rgba(108, 92, 231, 0.3);
+    border-color: rgba(212, 168, 83, 0.2);
   }
 }
 
@@ -86,7 +87,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 0; /* allow text truncation */
+  min-width: 0;
 }
 
 .cart-item-title {
@@ -94,7 +95,6 @@
   font-size: 1rem;
   color: var(--text-primary);
   transition: color var(--transition-fast);
-  /* Prevent overflow */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -102,7 +102,7 @@
 
 @media (hover: hover) {
   .cart-item-title:hover {
-    color: var(--primary-light);
+    color: var(--primary);
   }
 }
 
@@ -129,7 +129,7 @@
 
 .cart-item-genres .genre-tag {
   padding: 2px 8px;
-  background: rgba(108, 92, 231, 0.1);
+  background: rgba(212, 168, 83, 0.1);
   color: var(--primary-light);
   font-size: 0.7rem;
   font-weight: 500;
@@ -145,8 +145,8 @@
 
 .cart-discount {
   padding: 4px 10px;
-  background: linear-gradient(135deg, #FF6B6B, #FFD93D);
-  color: #1a1a1a;
+  background: var(--gradient-warm);
+  color: #0A0A12;
   font-size: 0.75rem;
   font-weight: 700;
   border-radius: 6px;
@@ -190,14 +190,14 @@
 .cart-remove-btn:hover,
 .cart-remove-btn:active {
   color: var(--accent-red);
-  background: rgba(255, 82, 82, 0.1);
+  background: rgba(248, 113, 113, 0.1);
 }
 
 /* ── Summary ─────────────────────────────────────── */
 .cart-summary {
   padding: var(--spacing-xl);
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(212, 168, 83, 0.15);
   border-radius: var(--radius-lg);
   position: sticky;
   top: calc(var(--navbar-height) + var(--spacing-md));
@@ -207,8 +207,10 @@
 }
 
 .summary-title {
+  font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .summary-items {
@@ -250,15 +252,14 @@
   align-items: center;
   font-size: 1.05rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .summary-total-price {
+  font-family: var(--font-display);
   font-size: 1.3rem;
   font-weight: 800;
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary);
 }
 
 /* ── Responsive ──────────────────────────────────── */
@@ -349,7 +350,6 @@
     flex-shrink: 0;
   }
 
-  /* Summary compact */
   .summary-title {
     font-size: 0.95rem;
   }

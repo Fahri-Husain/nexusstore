@@ -1,9 +1,9 @@
-/* ── Game Detail ─────────────────────────────────── */
+/* ── Game Detail — Dark Premium ───────────────────── */
 .back-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin-bottom: var(--spacing-xl);
   transition: color var(--transition-fast);
@@ -11,7 +11,7 @@
 }
 
 .back-link:hover {
-  color: var(--primary-light);
+  color: var(--primary);
 }
 
 .game-detail {
@@ -82,7 +82,7 @@
 
 .gallery-thumb.active {
   border-color: var(--primary);
-  box-shadow: 0 0 10px rgba(108, 92, 231, 0.3);
+  box-shadow: 0 0 10px rgba(212, 168, 83, 0.3);
 }
 
 /* ── Info ────────────────────────────────────────── */
@@ -99,9 +99,11 @@
 }
 
 .game-detail-title {
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 800;
   line-height: 1.2;
+  color: var(--text-primary);
 }
 
 .game-detail-meta {
@@ -150,7 +152,7 @@
 }
 
 .spec-icon {
-  color: var(--primary-light);
+  color: var(--primary);
   font-size: 1.2rem;
   flex-shrink: 0;
 }
@@ -177,7 +179,7 @@
   flex-direction: column;
   gap: var(--spacing-lg);
   background: var(--bg-surface);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(212, 168, 83, 0.15);
   border-radius: var(--radius-lg);
   position: sticky;
   top: calc(var(--navbar-height) + var(--spacing-md));
@@ -201,9 +203,10 @@
 }
 
 .price-final {
+  font-family: var(--font-display);
   font-size: 1.8rem;
   font-weight: 800;
-  color: var(--text-primary);
+  color: var(--primary);
 }
 
 .game-detail-skeleton {

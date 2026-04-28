@@ -112,7 +112,7 @@ export default function Library() {
                   onError={(e) => {
                     if (!e.target.dataset.hasError) {
                       e.target.dataset.hasError = 'true';
-                      e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect fill="#1A1A25" width="300" height="400"/><text fill="#6C5CE7" font-family="sans-serif" font-size="16" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${(item.games?.title || 'Game').substring(0, 18)}</text></svg>`)}`;
+                      e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect fill="#14141F" width="300" height="400"/><text fill="#D4A853" font-family="sans-serif" font-size="16" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${(item.games?.title || 'Game').substring(0, 18)}</text></svg>`)}`;
                     }
                   }}
                 />

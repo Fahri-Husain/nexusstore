@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { HiOutlineShoppingCart, HiCheck, HiStar, HiArrowLeft, HiOutlineCalendar, HiOutlineDesktopComputer, HiOutlineUserGroup } from 'react-icons/hi';
+import { AnimatedButton, AnimatedLink } from '../lib/motionUtils';
 import toast from 'react-hot-toast';
 import './GameDetail.css';
 
@@ -93,7 +94,7 @@ export default function GameDetail() {
     return (
       <div className="page-container container" style={{ textAlign: 'center', padding: '80px 0' }}>
         <h2>Game tidak ditemukan</h2>
-        <Link to="/" className="btn btn-primary" style={{ marginTop: 16 }}>Kembali ke Beranda</Link>
+        <AnimatedLink to="/" className="btn btn-primary" style={{ marginTop: 16 }}>Kembali ke Beranda</AnimatedLink>
       </div>
     );
   }
@@ -117,7 +118,7 @@ export default function GameDetail() {
                 onError={(e) => {
                   if (!e.target.dataset.hasError) {
                     e.target.dataset.hasError = 'true';
-                    e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"><rect fill="#1A1A25" width="800" height="450"/><text fill="#6C5CE7" font-family="sans-serif" font-size="24" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${game.title.substring(0, 25)}</text></svg>`)}`;
+                    e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"><rect fill="#14141F" width="800" height="450"/><text fill="#D4A853" font-family="sans-serif" font-size="24" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${game.title.substring(0, 25)}</text></svg>`)}`;
                   }
                 }}
               />
@@ -214,17 +215,17 @@ export default function GameDetail() {
               </div>
 
               {isOwned ? (
-                <Link to="/library" className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
+                <AnimatedLink to="/library" className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
                   <HiCheck /> Sudah Dimiliki — Buka Perpustakaan
-                </Link>
+                </AnimatedLink>
               ) : isInCart(game.game_id) ? (
-                <Link to="/cart" className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
+                <AnimatedLink to="/cart" className="btn btn-secondary btn-lg" style={{ width: '100%' }}>
                   <HiCheck /> Dalam Keranjang — Lihat Keranjang
-                </Link>
+                </AnimatedLink>
               ) : (
-                <button className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={handleAddToCart}>
+                <AnimatedButton className="btn btn-primary btn-lg" style={{ width: '100%' }} onClick={handleAddToCart}>
                   <HiOutlineShoppingCart /> Tambahkan ke Keranjang
-                </button>
+                </AnimatedButton>
               )}
             </div>
           </div>

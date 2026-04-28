@@ -3,16 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { FcGoogle } from 'react-icons/fc';
-import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff, HiOutlineShieldCheck } from 'react-icons/hi';
+import { HiOutlineUserGroup, HiOutlineArrowLeft, HiOutlineArrowRight } from 'react-icons/hi';
+import { motion } from 'framer-motion';
+import { AnimatedButton } from '../lib/motionUtils';
 import toast from 'react-hot-toast';
 import './Auth.css';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   // 2FA State
   const [showOtpForm, setShowOtpForm] = useState(false);
   const [otp, setOtp] = useState('');
@@ -28,26 +29,15 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      // Verifikasi password terlebih dahulu
       await signInWithEmail(email, password);
-      
-      // Logout sementara agar session tidak terbentuk sebelum OTP
       await signOut();
-      
-      // Kirim OTP sungguhan ke email via Supabase
-      const { error: otpError } = await supabase.auth.signInWithOtp({ 
-        email,
-      });
-
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email });
       if (otpError) throw otpError;
 
       setShowOtpForm(true);
       toast.success('Kode OTP telah dikirim ke email Anda');
     } catch (error) {
-      toast.error(error.message === 'Invalid login credentials'
-        ? 'Email atau password salah'
-        : error.message
-      );
+      toast.error(error.message === 'Invalid login credentials' ? 'Email atau password salah' : error.message);
     } finally {
       setLoading(false);
     }
@@ -59,23 +49,14 @@ export default function Login() {
       toast.error('Masukkan kode OTP');
       return;
     }
-
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otp,
-        type: 'email'
-      });
-
+      const { error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' });
       if (error) throw error;
-
       toast.success('Berhasil masuk!');
       navigate('/');
     } catch (error) {
-      toast.error(error.message === 'Token has expired or is invalid' 
-        ? 'Kode OTP salah atau kedaluwarsa' 
-        : error.message);
+      toast.error(error.message === 'Token has expired or is invalid' ? 'Kode OTP salah atau kedaluwarsa' : error.message);
     } finally {
       setLoading(false);
     }
@@ -90,147 +71,129 @@ export default function Login() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container animate-fadeIn">
-        <div className="auth-visual">
-          <div className="auth-visual-content">
-            <div className="auth-visual-logo">
-              <div className="logo-icon">N</div>
-              <span className="logo-text">Nexus Store</span>
-            </div>
-            <h2 className="auth-visual-title">Selamat Datang Kembali</h2>
-            <p className="auth-visual-desc">
-              Masuk ke akunmu dan temukan game-game terbaik dengan harga spesial
-            </p>
-            <div className="auth-visual-features">
-              <div className="feature-item">
-                <span className="feature-icon">🎮</span>
-                <span>Game Digital Terlengkap</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">💳</span>
-                <span>Pembayaran Aman & Mudah</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">⚡</span>
-                <span>Download Instan</span>
-              </div>
-            </div>
-          </div>
-          <div className="auth-visual-glow" />
-        </div>
+    <motion.div
+      className="auth-split-page"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
 
-        <div className="auth-form-wrapper">
-          <div className="auth-form-header">
-            <h1 className="auth-title">Masuk</h1>
-            <p className="auth-subtitle">Masuk ke akun Nexus Store kamu</p>
+      {/* Left Side: Form */}
+      <div className="auth-left">
+        <Link to="/" className="auth-logo" style={{ textDecoration: 'none' }}>
+          NEXUS STORE.
+        </Link>
+
+        <div className="auth-content-wrapper">
+          <div className="auth-header-split">
+            <motion.h1
+              className="auth-title-split"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.1 }}
+            >
+              Hi there!
+            </motion.h1>
+            <motion.p
+              className="auth-subtitle-split"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.3 }}
+            >
+              Welcome to Nexus Store.
+            </motion.p>
           </div>
 
-          <button className="google-btn" onClick={handleGoogleLogin} id="google-login-btn">
-            <FcGoogle className="google-icon" />
-            Masuk dengan Google
-          </button>
+          <AnimatedButton className="split-btn split-btn-google" onClick={handleGoogleLogin} disabled={loading}>
+            <FcGoogle size={20} /> Log in with Google
+          </AnimatedButton>
 
-          <div className="auth-divider">
-            <span>atau masuk dengan email</span>
+          <div className="split-divider">
+            <span>or</span>
           </div>
 
           {!showOtpForm ? (
-            <form className="auth-form" onSubmit={handleEmailLogin}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="email">Email</label>
-                <div className="input-with-icon">
-                  <HiOutlineMail className="input-icon" />
-                  <input
-                    type="email"
-                    id="email"
-                    className="form-input"
-                    placeholder="nama@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
+            <form className="auth-form-split" onSubmit={handleEmailLogin}>
+              <div className="split-input-wrapper">
+                <input
+                  type="email"
+                  className="split-input"
+                  placeholder="Your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
 
-              <div className="form-group">
-                <label className="form-label" htmlFor="password">Password</label>
-                <div className="input-with-icon">
-                  <HiOutlineLockClosed className="input-icon" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    className="form-input"
-                    placeholder="Masukkan password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="password-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
-                  </button>
-                </div>
+              <div className="split-input-wrapper">
+                <input
+                  type="password"
+                  className="split-input"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+                <a href="#" className="forgot-password">Forgot password?</a>
               </div>
 
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg auth-submit"
-                disabled={loading}
-                id="login-submit-btn"
-              >
-                {loading ? <div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} /> : 'Masuk'}
-              </button>
+              <AnimatedButton type="submit" className="split-btn split-btn-primary" disabled={loading}>
+                {loading ? 'Logging in...' : 'Log In'}
+              </AnimatedButton>
             </form>
           ) : (
-            <form className="auth-form animate-fadeIn" onSubmit={handleOtpSubmit}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="otp">Kode OTP</label>
-                <div className="input-with-icon">
-                  <HiOutlineShieldCheck className="input-icon" />
-                  <input
-                    type="text"
-                    id="otp"
-                    className="form-input"
-                    placeholder="Masukkan kode OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    maxLength={10}
-                    required
-                  />
-                </div>
-                <p className="auth-subtitle" style={{ fontSize: '0.85rem', marginTop: '0.5rem', textAlign: 'left' }}>
-                  Cek email atau SMS Anda untuk melihat kode OTP.
-                </p>
+            <form className="auth-form-split" onSubmit={handleOtpSubmit}>
+              <div className="split-input-wrapper">
+                <input
+                  type="text"
+                  className="split-input"
+                  placeholder="Enter OTP Code"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  maxLength={10}
+                  required
+                />
               </div>
-
-              <button
-                type="submit"
-                className="btn btn-primary btn-lg auth-submit"
-                id="otp-submit-btn"
-              >
-                Verifikasi OTP
-              </button>
-              
-              <button
-                type="button"
-                className="btn btn-secondary btn-lg auth-submit"
-                onClick={() => setShowOtpForm(false)}
-                style={{ marginTop: '10px', backgroundColor: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}
-              >
-                Kembali ke Login
-              </button>
+              <AnimatedButton type="submit" className="split-btn split-btn-primary" disabled={loading}>
+                {loading ? 'Verifying...' : 'Verify OTP'}
+              </AnimatedButton>
+              <AnimatedButton type="button" className="split-btn" style={{ background: 'transparent', border: '1px solid #E0E0E0' }} onClick={() => setShowOtpForm(false)}>
+                Back to Login
+              </AnimatedButton>
             </form>
           )}
 
-          <p className="auth-switch">
-            Belum punya akun? <Link to="/register">Daftar sekarang</Link>
-          </p>
+          <div className="split-footer">
+            Don't have an account? <Link to="/register">Sign up</Link>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Right Side: Image Overlay */}
+      <div className="auth-right">
+        <div className="auth-right-top">
+          <div>{/* Empty right area for alignment */}</div>
+        </div>
+
+        <div className="auth-right-bottom">
+          <motion.h2
+            className="auth-quote"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.2 }}
+          >
+            Go anywhere you want in a Galaxy full of wonders!
+          </motion.h2>
+          <motion.div
+            className="auth-quote-controls"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.5 }}
+          >
+          </motion.div>
+        </div>
+      </div>
+
+    </motion.div>
   );
 }

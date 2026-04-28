@@ -1,4 +1,4 @@
-/* ── Orders Empty ────────────────────────────────── */
+/* ── Orders — Dark Premium ───────────────────────── */
 .orders-empty {
   text-align: center;
   padding: var(--spacing-3xl) 0;
@@ -29,7 +29,7 @@
 
 @media (hover: hover) {
   .order-card:hover {
-    border-color: rgba(108, 92, 231, 0.25);
+    border-color: rgba(212, 168, 83, 0.2);
   }
 }
 
@@ -61,6 +61,7 @@
   font-size: 0.82rem;
   font-weight: 600;
   font-family: monospace;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -102,12 +103,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--text-primary);
 }
 
 .order-item-price {
   font-size: 0.9rem;
   font-weight: 600;
   flex-shrink: 0;
+  color: var(--text-primary);
 }
 
 .order-footer {
@@ -131,7 +134,7 @@
 }
 
 .order-total strong {
-  color: var(--text-primary);
+  color: var(--primary);
   font-size: 1.05rem;
 }
 

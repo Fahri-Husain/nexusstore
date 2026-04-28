@@ -130,7 +130,7 @@ export default function Checkout() {
                 onError={(e) => {
                   if (!e.target.dataset.hasError) {
                     e.target.dataset.hasError = 'true';
-                    e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="100"><rect fill="#1A1A25" width="80" height="100"/><text fill="#6C5CE7" font-family="sans-serif" font-size="10" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${item.title.substring(0, 12)}</text></svg>`)}`;
+                    e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="100"><rect fill="#14141F" width="80" height="100"/><text fill="#D4A853" font-family="sans-serif" font-size="10" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${item.title.substring(0, 12)}</text></svg>`)}`;
                   }
                 }}
               />

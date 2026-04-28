@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FcGoogle } from 'react-icons/fc';
-import { HiOutlineMail, HiOutlineLockClosed, HiOutlineUser, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
+import { HiOutlineUserGroup, HiOutlineArrowLeft, HiOutlineArrowRight } from 'react-icons/hi';
+import { motion } from 'framer-motion';
+import { AnimatedButton } from '../lib/motionUtils';
 import toast from 'react-hot-toast';
 import './Auth.css';
 
@@ -11,7 +13,6 @@ export default function Register() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signUpWithEmail, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -56,142 +57,137 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-container animate-fadeIn">
-        <div className="auth-visual">
-          <div className="auth-visual-content">
-            <div className="auth-visual-logo">
-              <div className="logo-icon">N</div>
-              <span className="logo-text">Nexus Store</span>
-            </div>
-            <h2 className="auth-visual-title">Gabung Bersama Kami</h2>
-            <p className="auth-visual-desc">
-              Buat akun dan mulai eksplorasi ribuan game digital dengan penawaran terbaik
-            </p>
-            <div className="auth-visual-features">
-              <div className="feature-item">
-                <span className="feature-icon">🎯</span>
-                <span>Diskon Eksklusif Member</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">📚</span>
-                <span>Perpustakaan Game Pribadi</span>
-              </div>
-              <div className="feature-item">
-                <span className="feature-icon">🔔</span>
-                <span>Notifikasi Promo Terbaru</span>
-              </div>
-            </div>
-          </div>
-          <div className="auth-visual-glow" />
-        </div>
-
-        <div className="auth-form-wrapper">
-          <div className="auth-form-header">
-            <h1 className="auth-title">Daftar</h1>
-            <p className="auth-subtitle">Buat akun Nexus Store baru</p>
-          </div>
-
-          <button className="google-btn" onClick={handleGoogleLogin} id="google-register-btn">
-            <FcGoogle className="google-icon" />
-            Daftar dengan Google
-          </button>
-
-          <div className="auth-divider">
-            <span>atau daftar dengan email</span>
-          </div>
-
-          <form className="auth-form" onSubmit={handleRegister}>
-            <div className="form-group">
-              <label className="form-label" htmlFor="fullname">Nama Lengkap</label>
-              <div className="input-with-icon">
-                <HiOutlineUser className="input-icon" />
-                <input
-                  type="text"
-                  id="fullname"
-                  className="form-input"
-                  placeholder="Masukkan nama lengkap"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="email">Email</label>
-              <div className="input-with-icon">
-                <HiOutlineMail className="input-icon" />
-                <input
-                  type="email"
-                  id="email"
-                  className="form-input"
-                  placeholder="nama@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="password">Password</label>
-              <div className="input-with-icon">
-                <HiOutlineLockClosed className="input-icon" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  className="form-input"
-                  placeholder="Minimal 6 karakter"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
-                </button>
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label" htmlFor="confirm-password">Konfirmasi Password</label>
-              <div className="input-with-icon">
-                <HiOutlineLockClosed className="input-icon" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="confirm-password"
-                  className="form-input"
-                  placeholder="Ulangi password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-              {confirmPassword && password !== confirmPassword && (
-                <span className="form-error">Password tidak cocok</span>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              className="btn btn-primary btn-lg auth-submit"
-              disabled={loading}
-              id="register-submit-btn"
+    <motion.div 
+      className="auth-split-page"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: 'easeOut' }}
+    >
+      
+      {/* Left Side: Form */}
+      <div className="auth-left">
+        <Link to="/" className="auth-logo" style={{ textDecoration: 'none' }}>
+          NEXUS STORE.
+        </Link>
+        
+        <div className="auth-content-wrapper">
+          <div className="auth-header-split">
+            <motion.h1 
+              className="auth-title-split"
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.1 }}
             >
-              {loading ? <div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} /> : 'Daftar'}
-            </button>
+              Join us!
+            </motion.h1>
+            <motion.p 
+              className="auth-subtitle-split"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.3 }}
+            >
+              Create a new Nexus Store account.
+            </motion.p>
+          </div>
+
+          <AnimatedButton className="split-btn split-btn-google" onClick={handleGoogleLogin} disabled={loading}>
+            <FcGoogle size={20} /> Sign up with Google
+          </AnimatedButton>
+
+          <div className="split-divider">
+            <span>or</span>
+          </div>
+
+          <form className="auth-form-split" onSubmit={handleRegister}>
+            <div className="split-input-wrapper">
+              <input
+                type="text"
+                className="split-input"
+                placeholder="Full Name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="split-input-wrapper">
+              <input
+                type="email"
+                className="split-input"
+                placeholder="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="split-input-wrapper">
+              <input
+                type="password"
+                className="split-input"
+                placeholder="Password (Min. 6 chars)"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+            </div>
+
+            <div className="split-input-wrapper">
+              <input
+                type="password"
+                className="split-input"
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <AnimatedButton type="submit" className="split-btn split-btn-primary" disabled={loading}>
+              {loading ? 'Creating...' : 'Sign Up'}
+            </AnimatedButton>
           </form>
 
-          <p className="auth-switch">
-            Sudah punya akun? <Link to="/login">Masuk di sini</Link>
-          </p>
+          <div className="split-footer">
+            Already have an account? <Link to="/login">Log In</Link>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Right Side: Image Overlay */}
+      <div className="auth-right">
+        <div className="auth-right-top">
+          <div>{/* Empty right area for alignment */}</div>
+        </div>
+
+        <div className="auth-right-bottom">
+          <motion.h2 
+            className="auth-quote"
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.2 }}
+          >
+            Go anywhere you want in a Galaxy full of wonders!
+          </motion.h2>
+          <motion.div 
+            className="auth-quote-controls"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.5 }}
+          >
+            <div className="quote-dots">
+              <span className="active">01</span>
+              <span>06</span>
+            </div>
+            <div className="quote-arrows">
+              <AnimatedButton className="arrow-btn"><HiOutlineArrowLeft /></AnimatedButton>
+              <AnimatedButton className="arrow-btn"><HiOutlineArrowRight /></AnimatedButton>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+      
+    </motion.div>
   );
 }

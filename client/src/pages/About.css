@@ -1,0 +1,206 @@
+/* ── About Page — Dark Premium ────────────────────── */
+.about-page {
+  min-height: calc(100vh - 200px);
+  background: var(--bg-primary);
+}
+
+/* ── Hero ────────────────────────────────────────── */
+.about-hero {
+  position: relative;
+  padding: calc(var(--navbar-height) + var(--spacing-3xl)) 0 var(--spacing-3xl);
+  overflow: hidden;
+}
+
+.about-hero-glow {
+  position: absolute;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.about-title {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.about-title-accent {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.about-desc {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+
+/* ── Stats ───────────────────────────────────────── */
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-3xl);
+}
+
+.about-stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  text-align: center;
+  transition: all var(--transition-normal);
+}
+
+.about-stat-card:hover {
+  border-color: rgba(212, 168, 83, 0.2);
+  transform: translateY(-2px);
+}
+
+.about-stat-number {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.about-stat-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Feature Cards ───────────────────────────────── */
+.about-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-xl);
+  margin-bottom: var(--spacing-3xl);
+}
+
+.about-card {
+  background: var(--bg-surface);
+  padding: var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+}
+
+.about-card:hover {
+  border-color: rgba(212, 168, 83, 0.2);
+  transform: translateY(-2px);
+}
+
+.about-card-icon {
+  width: 48px;
+  height: 48px;
+  background: rgba(212, 168, 83, 0.1);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: var(--primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.about-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.about-card p {
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 0.9rem;
+}
+
+/* ── Mission ─────────────────────────────────────── */
+.about-mission {
+  text-align: center;
+  padding: var(--spacing-3xl) var(--spacing-xl);
+  background: var(--bg-surface);
+  border: 1px solid rgba(212, 168, 83, 0.1);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--spacing-3xl);
+  position: relative;
+  overflow: hidden;
+}
+
+.about-mission::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 200px;
+  background: radial-gradient(ellipse, rgba(212, 168, 83, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.about-mission-title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  position: relative;
+}
+
+.about-mission-text {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.8;
+  max-width: 700px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* ── Responsive ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .about-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .about-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-hero {
+    padding-top: calc(var(--navbar-height) + var(--spacing-2xl));
+    padding-bottom: var(--spacing-2xl);
+  }
+
+  .about-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+  }
+
+  .about-stat-number {
+    font-size: 1.5rem;
+  }
+
+  .about-mission {
+    padding: var(--spacing-xl) var(--spacing-md);
+  }
+}
