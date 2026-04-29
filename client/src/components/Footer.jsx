@@ -27,7 +27,7 @@ export default function Footer() {
           <div className="footer-links">
             <h4 className="footer-title">Navigasi</h4>
             <Link to="/">Beranda</Link>
-            <Link to="/collection">Collection</Link>
+            <Link to="/collection">Koleksi</Link>
             <Link to="/cart">Keranjang</Link>
             <Link to="/library">Perpustakaan</Link>
           </div>

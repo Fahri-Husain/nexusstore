@@ -33,22 +33,22 @@ export default function HeroSection() {
           animate="show"
         >
           <motion.div variants={item} className="hero-badge">
-            <span className="badge">CURATED ASSETS</span>
+            <span className="badge">KOLEKSI PILIHAN</span>
           </motion.div>
           
           <motion.h1 variants={item} className="hero-title tracking-wide">
-            ELEVATE <br />
-            YOUR <span className="text-contrast">PLAY.</span>
+            <span className="hero-title-gradient">ELEVATE</span> <br />
+            <span className="hero-title-gradient">YOUR PLAY.</span>
           </motion.h1>
           
           <motion.p variants={item} className="hero-subtitle">
-            A highly curated selection of digital masterpieces.
-            <br /> Immerse yourself in the next generation of interactive experiences.
+            Koleksi pilihan aset digital berkualitas tinggi.
+            <br /> Rasakan generasi terbaru pengalaman interaktif yang tak terlupakan.
           </motion.p>
           
           <motion.div variants={item} className="hero-cta-group">
             <AnimatedLink to="/collection" className="btn btn-primary btn-large">
-              EXPLORE COLLECTION
+              JELAJAHI KOLEKSI
             </AnimatedLink>
           </motion.div>
         </motion.div>

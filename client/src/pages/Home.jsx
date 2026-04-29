@@ -77,42 +77,42 @@ export default function Home() {
       <section className="featured-section container">
         <div className="featured-header">
           <div>
-            <h2 className="featured-title tracking-wide">CURATED</h2>
-            <p className="featured-subtitle">Hand-picked masterpieces for your library</p>
+            <h2 className="featured-title tracking-wide">PILIHAN TERBAIK</h2>
+            <p className="featured-subtitle">Game-game pilihan terbaik untuk koleksi Anda</p>
           </div>
           <Link to="/collection" className="featured-view-all">
-            VIEW ALL <HiOutlineArrowRight />
+            LIHAT SEMUA <HiOutlineArrowRight />
           </Link>
         </div>
 
         {loading ? (
-          <div className="bento-grid">
+          <div className="home-grid">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className={`bento-item ${i === 0 ? 'bento-large' : ''}`}>
+              <div key={i} className="home-grid-item">
                 <div className="game-card-skeleton">
-                  <div className="skeleton" style={{ aspectRatio: i === 0 ? '16/10' : '3/4' }} />
+                  <div className="skeleton" style={{ aspectRatio: '3/4' }} />
                 </div>
               </div>
             ))}
           </div>
         ) : featuredGames.length > 0 ? (
           <motion.div 
-            className="bento-grid"
+            className="home-grid"
             variants={staggerContainer}
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, margin: "-100px" }}
           >
-            {featuredGames.map((game, index) => (
+            {featuredGames.map((game) => (
               <motion.div 
                 key={game.game_id} 
-                className={`bento-item ${index === 0 ? 'bento-large' : ''}`}
+                className="home-grid-item"
                 variants={staggerItem}
               >
                 <GameCard
                   game={game}
                   isOwned={ownedGameIds.has(game.game_id)}
-                  isLarge={index === 0}
+                  isLarge={false}
                 />
               </motion.div>
             ))}
@@ -128,13 +128,13 @@ export default function Home() {
           whileInView="show"
           viewport={{ once: true, margin: "-50px" }}
         >
-          <motion.h2 variants={staggerItem} className="cta-title tracking-wide">EXPAND YOUR HORIZONS</motion.h2>
+          <motion.h2 variants={staggerItem} className="cta-title tracking-wide">PERLUAS WAWASANMU</motion.h2>
           <motion.p variants={staggerItem} className="cta-desc">
-            Dive into our full collection of premium digital assets. Hand-picked, rigorously tested, and instantly delivered.
+            Jelajahi koleksi lengkap aset digital premium kami. Dipilih dengan cermat, diuji dengan ketat, dan dikirim secara instan.
           </motion.p>
           <motion.div variants={staggerItem}>
             <AnimatedLink to="/collection" className="btn btn-secondary btn-large">
-              BROWSE FULL COLLECTION
+              JELAJAHI KOLEKSI LENGKAP
             </AnimatedLink>
           </motion.div>
         </motion.div>

@@ -17,6 +17,7 @@ import Library from './pages/Library';
 import OrderHistory from './pages/OrderHistory';
 import PaymentStatus from './pages/PaymentStatus';
 import AdminPanel from './pages/AdminPanel';
+import Support from './pages/Support';
 import ScrollToTop from './components/ScrollToTop';
 import './App.css';
 
@@ -55,6 +56,7 @@ function App() {
             <Route path="/admin" element={
               <ProtectedRoute adminOnly><PageTransition><AdminPanel /></PageTransition></ProtectedRoute>
             } />
+            <Route path="/support" element={<PageTransition><Support /></PageTransition>} />
           </Routes>
         </AnimatePresence>
       </main>

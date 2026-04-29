@@ -81,7 +81,8 @@ export default function Login() {
       {/* Left Side: Form */}
       <div className="auth-left">
         <Link to="/" className="auth-logo" style={{ textDecoration: 'none' }}>
-          NEXUS STORE.
+          <span className="logo-desktop">NEXUS STORE.</span>
+          <span className="logo-mobile"><HiOutlineArrowLeft /> Kembali ke Beranda</span>
         </Link>
 
         <div className="auth-content-wrapper">
@@ -92,7 +93,7 @@ export default function Login() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.1 }}
             >
-              Hi there!
+              Halo!
             </motion.h1>
             <motion.p
               className="auth-subtitle-split"
@@ -100,16 +101,16 @@ export default function Login() {
               animate={{ opacity: 1 }}
               transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.3 }}
             >
-              Welcome to Nexus Store.
+              Selamat datang kembali di Nexus Store.
             </motion.p>
           </div>
 
           <AnimatedButton className="split-btn split-btn-google" onClick={handleGoogleLogin} disabled={loading}>
-            <FcGoogle size={20} /> Log in with Google
+            <FcGoogle size={20} /> Masuk dengan Google
           </AnimatedButton>
 
           <div className="split-divider">
-            <span>or</span>
+            <span>atau</span>
           </div>
 
           {!showOtpForm ? (
@@ -118,7 +119,7 @@ export default function Login() {
                 <input
                   type="email"
                   className="split-input"
-                  placeholder="Your email"
+                  placeholder="Email Anda"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -129,16 +130,16 @@ export default function Login() {
                 <input
                   type="password"
                   className="split-input"
-                  placeholder="Password"
+                  placeholder="Kata sandi"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
-                <a href="#" className="forgot-password">Forgot password?</a>
+                <a href="#" className="forgot-password">Lupa kata sandi?</a>
               </div>
 
               <AnimatedButton type="submit" className="split-btn split-btn-primary" disabled={loading}>
-                {loading ? 'Logging in...' : 'Log In'}
+                {loading ? 'Memuat...' : 'Masuk'}
               </AnimatedButton>
             </form>
           ) : (
@@ -147,7 +148,7 @@ export default function Login() {
                 <input
                   type="text"
                   className="split-input"
-                  placeholder="Enter OTP Code"
+                  placeholder="Masukkan Kode OTP"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value)}
                   maxLength={10}
@@ -155,16 +156,16 @@ export default function Login() {
                 />
               </div>
               <AnimatedButton type="submit" className="split-btn split-btn-primary" disabled={loading}>
-                {loading ? 'Verifying...' : 'Verify OTP'}
+                {loading ? 'Memverifikasi...' : 'Verifikasi OTP'}
               </AnimatedButton>
               <AnimatedButton type="button" className="split-btn" style={{ background: 'transparent', border: '1px solid #E0E0E0' }} onClick={() => setShowOtpForm(false)}>
-                Back to Login
+                Kembali ke Login
               </AnimatedButton>
             </form>
           )}
 
           <div className="split-footer">
-            Don't have an account? <Link to="/register">Sign up</Link>
+            Belum punya akun? <Link to="/register">Daftar</Link>
           </div>
         </div>
       </div>
@@ -182,7 +183,7 @@ export default function Login() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.2 }}
           >
-            Go anywhere you want in a Galaxy full of wonders!
+            Embark on an epic journey in a world of limitless adventures!
           </motion.h2>
           <motion.div
             className="auth-quote-controls"

@@ -3,6 +3,8 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { HiOutlineLockClosed, HiOutlineCreditCard } from 'react-icons/hi';
+import { motion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '../lib/motionUtils';
 import toast from 'react-hot-toast';
 import './Checkout.css';
 
@@ -115,77 +117,91 @@ export default function Checkout() {
   }
 
   return (
-    <div className="page-container container">
-      <h1 className="section-title">Checkout</h1>
+    <div className="checkout-page">
+      <div className="checkout-hero">
+        <div className="checkout-hero-glow" />
+        <div className="container">
+          <h1 className="checkout-title">Checkout</h1>
+        </div>
+      </div>
 
-      <div className="checkout-layout animate-fadeIn">
-        <div className="checkout-items">
-          <h3 className="checkout-subtitle">Item Pesanan ({cartItems.length})</h3>
-          {cartItems.map(item => (
-            <div key={item.game_id} className="checkout-item">
-              <img
-                src={item.image_url}
-                alt={item.title}
-                className="checkout-item-img"
-                onError={(e) => {
-                  if (!e.target.dataset.hasError) {
-                    e.target.dataset.hasError = 'true';
-                    e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="100"><rect fill="#14141F" width="80" height="100"/><text fill="#D4A853" font-family="sans-serif" font-size="10" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${item.title.substring(0, 12)}</text></svg>`)}`;
-                  }
-                }}
-              />
-              <div className="checkout-item-info">
-                <span className="checkout-item-title">{item.title}</span>
-                <span className="checkout-item-platform">{item.platform}</span>
+      <div className="container checkout-content">
+        <motion.div 
+          className="checkout-layout"
+          initial="hidden"
+          animate="show"
+          variants={staggerContainer}
+        >
+          <motion.div className="checkout-items glass-panel" variants={staggerItem}>
+            <h3 className="checkout-subtitle">Item Pesanan ({cartItems.length})</h3>
+            {cartItems.map(item => (
+              <div key={item.game_id} className="checkout-item">
+                <img
+                  src={item.image_url}
+                  alt={item.title}
+                  className="checkout-item-img"
+                  onError={(e) => {
+                    if (!e.target.dataset.hasError) {
+                      e.target.dataset.hasError = 'true';
+                      e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="100"><rect fill="#14141F" width="80" height="100"/><text fill="#D4A853" font-family="sans-serif" font-size="10" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${item.title.substring(0, 12)}</text></svg>`)}`;
+                    }
+                  }}
+                />
+                <div className="checkout-item-info">
+                  <span className="checkout-item-title">{item.title}</span>
+                  <span className="checkout-item-platform">{item.platform}</span>
+                </div>
+                <span className="checkout-item-price">{formatPrice(getDiscountedPrice(item))}</span>
               </div>
-              <span className="checkout-item-price">{formatPrice(getDiscountedPrice(item))}</span>
+            ))}
+          </motion.div>
+
+          <div className="checkout-summary-container">
+            <div className="checkout-payment glass-panel">
+              <h3 className="checkout-subtitle">
+                <HiOutlineCreditCard /> Pembayaran
+              </h3>
+
+              <div className="checkout-user-info">
+                <span className="checkout-label">Email</span>
+                <span className="checkout-value">{user?.email}</span>
+              </div>
+
+              <div className="checkout-summary">
+                <div className="checkout-row">
+                  <span>Subtotal ({cartItems.length} item)</span>
+                  <span>{formatPrice(getTotal())}</span>
+                </div>
+                <div className="checkout-row">
+                  <span>Biaya layanan</span>
+                  <span className="text-green">Gratis</span>
+                </div>
+                <div className="checkout-divider" />
+                <div className="checkout-row checkout-total">
+                  <span>Total Pembayaran</span>
+                  <span>{formatPrice(getTotal())}</span>
+                </div>
+              </div>
+
+              <button
+                className="btn btn-primary btn-lg checkout-pay-btn"
+                onClick={handlePayment}
+                disabled={loading}
+              >
+                {loading ? (
+                  <div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
+                ) : (
+                  <><HiOutlineLockClosed /> Bayar {formatPrice(getTotal())}</>
+                )}
+              </button>
+
+              <div className="checkout-secure">
+                <HiOutlineLockClosed />
+                <span>Pembayaran diproses secara aman oleh Midtrans</span>
+              </div>
             </div>
-          ))}
-        </div>
-
-        <div className="checkout-payment glass-card">
-          <h3 className="checkout-subtitle">
-            <HiOutlineCreditCard /> Pembayaran
-          </h3>
-
-          <div className="checkout-user-info">
-            <span className="checkout-label">Email</span>
-            <span className="checkout-value">{user?.email}</span>
           </div>
-
-          <div className="checkout-summary">
-            <div className="checkout-row">
-              <span>Subtotal ({cartItems.length} item)</span>
-              <span>{formatPrice(getTotal())}</span>
-            </div>
-            <div className="checkout-row">
-              <span>Biaya layanan</span>
-              <span className="text-green">Gratis</span>
-            </div>
-            <div className="checkout-divider" />
-            <div className="checkout-row checkout-total">
-              <span>Total Pembayaran</span>
-              <span>{formatPrice(getTotal())}</span>
-            </div>
-          </div>
-
-          <button
-            className="btn btn-primary btn-lg checkout-pay-btn"
-            onClick={handlePayment}
-            disabled={loading}
-          >
-            {loading ? (
-              <div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
-            ) : (
-              <><HiOutlineLockClosed /> Bayar {formatPrice(getTotal())}</>
-            )}
-          </button>
-
-          <div className="checkout-secure">
-            <HiOutlineLockClosed />
-            <span>Pembayaran diproses secara aman oleh Midtrans</span>
-          </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

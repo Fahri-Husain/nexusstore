@@ -1,84 +1,109 @@
-import React from 'react';
 import { HiOutlineLightningBolt, HiOutlineShieldCheck, HiOutlineGlobe, HiOutlineCreditCard } from 'react-icons/hi';
+import { motion } from 'framer-motion';
+import { staggerContainer, staggerItem } from '../lib/motionUtils';
 import './About.css';
 
 export default function About() {
+  const fadeUpVariant = {
+    hidden: { opacity: 0, y: 30 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+  };
+
   return (
     <div className="about-page">
       <div className="about-hero">
         <div className="about-hero-glow" />
         <div className="container">
-          <h1 className="about-title">About <span className="about-title-accent">Nexus Store</span></h1>
-          <p className="about-desc">
-            The ultimate destination for next-generation digital gaming assets. 
-            We provide a seamless marketplace ecosystem built with the latest technologies, 
-            offering instant transactions, real-time updates, and a curated library of premium games.
-          </p>
+          <motion.div
+            initial="hidden"
+            animate="show"
+            variants={staggerContainer}
+          >
+            <motion.h1 className="about-title" variants={staggerItem}>
+              Tentang <span className="about-title-accent">Nexus Store</span>
+            </motion.h1>
+            <motion.p className="about-desc" variants={staggerItem}>
+              Destinasi utama untuk aset gaming digital generasi berikutnya.
+              Kami menyediakan ekosistem marketplace yang mulus dengan teknologi terkini,
+              menawarkan transaksi instan, pembaruan real-time, dan perpustakaan game premium yang terkurasi.
+            </motion.p>
+          </motion.div>
         </div>
       </div>
 
       <div className="container">
         {/* Stats */}
-        <div className="about-stats">
-          <div className="about-stat-card">
+        <motion.div 
+          className="about-stats"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={staggerContainer}
+        >
+          <motion.div className="about-stat-card" variants={staggerItem}>
             <span className="about-stat-number">1000+</span>
-            <span className="about-stat-label">Premium Games</span>
-          </div>
-          <div className="about-stat-card">
+            <span className="about-stat-label">Game Premium</span>
+          </motion.div>
+          <motion.div className="about-stat-card" variants={staggerItem}>
             <span className="about-stat-number">50K+</span>
-            <span className="about-stat-label">Happy Gamers</span>
-          </div>
-          <div className="about-stat-card">
+            <span className="about-stat-label">Gamer Bahagia</span>
+          </motion.div>
+          <motion.div className="about-stat-card" variants={staggerItem}>
             <span className="about-stat-number">99.9%</span>
             <span className="about-stat-label">Uptime</span>
-          </div>
-          <div className="about-stat-card">
+          </motion.div>
+          <motion.div className="about-stat-card" variants={staggerItem}>
             <span className="about-stat-number">24/7</span>
-            <span className="about-stat-label">Support</span>
-          </div>
-        </div>
+            <span className="about-stat-label">Dukungan</span>
+          </motion.div>
+        </motion.div>
 
-        {/* Features Grid */}
-        <div className="about-content">
-          <div className="about-card">
-            <div className="about-card-icon">
-              <HiOutlineLightningBolt />
-            </div>
-            <h3>Instant Delivery</h3>
-            <p>Get your games instantly after purchase. No waiting, no delays. Start playing within seconds of completing your transaction.</p>
-          </div>
-          <div className="about-card">
-            <div className="about-card-icon">
-              <HiOutlineShieldCheck />
-            </div>
-            <h3>Secure Payments</h3>
-            <p>All transactions are processed through Midtrans with bank-grade encryption. Your payment information is always protected.</p>
-          </div>
-          <div className="about-card">
-            <div className="about-card-icon">
-              <HiOutlineGlobe />
-            </div>
-            <h3>Curated Selection</h3>
-            <p>Every game in our catalog is hand-picked for quality. We work directly with publishers to bring you the best titles available.</p>
-          </div>
-          <div className="about-card">
-            <div className="about-card-icon">
-              <HiOutlineCreditCard />
-            </div>
-            <h3>Best Prices</h3>
-            <p>Enjoy competitive pricing with regular discounts and exclusive deals. Get more value for every rupiah you spend.</p>
-          </div>
-        </div>
+        {/* Features Bento Grid */}
+        <motion.div 
+          className="about-content"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={staggerContainer}
+        >
+          <motion.div className="about-card" variants={staggerItem}>
+            <div className="about-card-icon"><HiOutlineLightningBolt /></div>
+            <h3>Pengiriman Instan</h3>
+            <p>Dapatkan game Anda langsung setelah pembelian. Tanpa menunggu, tanpa penundaan. Mulai bermain dalam hitungan detik setelah transaksi selesai.</p>
+          </motion.div>
+          <motion.div className="about-card" variants={staggerItem}>
+            <div className="about-card-icon"><HiOutlineShieldCheck /></div>
+            <h3>Pembayaran Aman</h3>
+            <p>Semua transaksi diproses melalui Midtrans dengan enkripsi tingkat bank. Informasi pembayaran Anda selalu terlindungi.</p>
+          </motion.div>
+          <motion.div className="about-card" variants={staggerItem}>
+            <div className="about-card-icon"><HiOutlineGlobe /></div>
+            <h3>Koleksi Terkurasi</h3>
+            <p>Setiap game dalam katalog kami dipilih secara cermat untuk kualitasnya. Kami bekerja langsung dengan penerbit untuk menghadirkan judul terbaik.</p>
+          </motion.div>
+          <motion.div className="about-card" variants={staggerItem}>
+            <div className="about-card-icon"><HiOutlineCreditCard /></div>
+            <h3>Harga Terbaik</h3>
+            <p>Nikmati harga kompetitif dengan diskon reguler dan penawaran eksklusif. Dapatkan nilai lebih untuk setiap rupiah yang Anda keluarkan.</p>
+          </motion.div>
+        </motion.div>
 
         {/* Mission */}
-        <div className="about-mission">
-          <h2 className="about-mission-title">Our Mission</h2>
+        <motion.div 
+          className="about-mission"
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={fadeUpVariant}
+        >
+          <div className="about-mission-bg" />
+          <h2 className="about-mission-title">Misi Kami</h2>
           <p className="about-mission-text">
-            To empower gamers and developers by providing a secure, fast, and reliable platform 
-            for discovering and distributing digital content. We believe gaming should be 
-            accessible, affordable, and enjoyable for everyone.
+            Memberdayakan para gamer dan pengembang dengan menyediakan platform yang aman, cepat, dan andal
+            untuk menemukan dan mendistribusikan konten digital. Kami percaya bahwa gaming seharusnya
+            mudah diakses, terjangkau, dan menyenangkan bagi semua orang.
           </p>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

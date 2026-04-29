@@ -67,7 +67,8 @@ export default function Register() {
       {/* Left Side: Form */}
       <div className="auth-left">
         <Link to="/" className="auth-logo" style={{ textDecoration: 'none' }}>
-          NEXUS STORE.
+          <span className="logo-desktop">NEXUS STORE.</span>
+          <span className="logo-mobile"><HiOutlineArrowLeft /> Kembali ke Beranda</span>
         </Link>
         
         <div className="auth-content-wrapper">
@@ -78,7 +79,7 @@ export default function Register() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.1 }}
             >
-              Join us!
+              Bergabung bersama kami!
             </motion.h1>
             <motion.p 
               className="auth-subtitle-split"
@@ -86,16 +87,16 @@ export default function Register() {
               animate={{ opacity: 1 }}
               transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.3 }}
             >
-              Create a new Nexus Store account.
+              Buat akun Nexus Store baru.
             </motion.p>
           </div>
 
           <AnimatedButton className="split-btn split-btn-google" onClick={handleGoogleLogin} disabled={loading}>
-            <FcGoogle size={20} /> Sign up with Google
+            <FcGoogle size={20} /> Daftar dengan Google
           </AnimatedButton>
 
           <div className="split-divider">
-            <span>or</span>
+            <span>atau</span>
           </div>
 
           <form className="auth-form-split" onSubmit={handleRegister}>
@@ -103,7 +104,7 @@ export default function Register() {
               <input
                 type="text"
                 className="split-input"
-                placeholder="Full Name"
+                placeholder="Nama Lengkap"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
@@ -114,7 +115,7 @@ export default function Register() {
               <input
                 type="email"
                 className="split-input"
-                placeholder="Your email"
+                placeholder="Email Anda"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -125,7 +126,7 @@ export default function Register() {
               <input
                 type="password"
                 className="split-input"
-                placeholder="Password (Min. 6 chars)"
+                placeholder="Kata sandi (Min. 6 karakter)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -137,7 +138,7 @@ export default function Register() {
               <input
                 type="password"
                 className="split-input"
-                placeholder="Confirm Password"
+                placeholder="Konfirmasi Kata Sandi"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -145,12 +146,12 @@ export default function Register() {
             </div>
 
             <AnimatedButton type="submit" className="split-btn split-btn-primary" disabled={loading}>
-              {loading ? 'Creating...' : 'Sign Up'}
+              {loading ? 'Membuat...' : 'Daftar'}
             </AnimatedButton>
           </form>
 
           <div className="split-footer">
-            Already have an account? <Link to="/login">Log In</Link>
+            Sudah punya akun? <Link to="/login">Masuk</Link>
           </div>
         </div>
       </div>
@@ -168,7 +169,7 @@ export default function Register() {
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 25, delay: 0.2 }}
           >
-            Go anywhere you want in a Galaxy full of wonders!
+            Embark on an epic journey in a world of limitless adventures!
           </motion.h2>
           <motion.div 
             className="auth-quote-controls"
@@ -176,14 +177,6 @@ export default function Register() {
             animate={{ opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.5 }}
           >
-            <div className="quote-dots">
-              <span className="active">01</span>
-              <span>06</span>
-            </div>
-            <div className="quote-arrows">
-              <AnimatedButton className="arrow-btn"><HiOutlineArrowLeft /></AnimatedButton>
-              <AnimatedButton className="arrow-btn"><HiOutlineArrowRight /></AnimatedButton>
-            </div>
           </motion.div>
         </div>
       </div>

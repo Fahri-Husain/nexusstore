@@ -74,21 +74,7 @@ function GameCard({ game, isOwned = false, isLarge = false }) {
               backgroundColor: '#14151C'
             }}
           />
-          <div className="game-card-overlay">
-            {isOwned ? (
-              <AnimatedLink to="/library" className="btn btn-secondary btn-cart" onClick={(e) => e.stopPropagation()}>
-                <HiOutlineDownload /> OWNED
-              </AnimatedLink>
-            ) : (
-              <AnimatedButton
-                className={`btn btn-cart ${inCart ? 'btn-secondary' : 'btn-primary'}`}
-                onClick={handleAddToCart}
-                disabled={inCart}
-              >
-                {inCart ? <><HiCheck /> IN CART</> : <><HiOutlineShoppingCart /> ADD TO CART</>}
-              </AnimatedButton>
-            )}
-          </div>
+          <div className="game-card-overlay" />
           {isOwned && <span className="badge tag-top-right">✓ LIBRARY</span>}
           {!isOwned && game.discount > 0 && <span className="badge tag-top-left">-{game.discount}%</span>}
         </div>

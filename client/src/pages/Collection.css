@@ -37,7 +37,10 @@
 .collection-title {
   font-size: clamp(2.5rem, 5vw, 4rem);
   font-weight: 800;
-  color: var(--text-primary);
+  background: linear-gradient(180deg, #FFFFFF 0%, #A0A0B0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: var(--spacing-sm);
   letter-spacing: -0.02em;
 }
@@ -47,6 +50,61 @@
   font-size: 1.1rem;
   max-width: 600px;
   line-height: 1.6;
+}
+
+/* ── Search Bar ──────────────────────────────────── */
+.collection-search-bar {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 14px 24px;
+  margin-bottom: var(--spacing-xl);
+  transition: all var(--transition-normal);
+  max-width: 600px;
+}
+
+.collection-search-bar:focus-within {
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.05);
+}
+
+.search-icon {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  margin-right: 12px;
+}
+
+.search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: var(--font-family);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.clear-search-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+  padding: 0;
+}
+
+.clear-search-btn:hover {
+  color: var(--text-primary);
 }
 
 /* ── Controls ────────────────────────────────────── */
@@ -60,7 +118,7 @@
   justify-content: space-between;
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-2xl);
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 /* ── Genre Filters ───────────────────────────────── */
@@ -72,6 +130,8 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   padding-bottom: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .genre-filters::-webkit-scrollbar {
@@ -107,15 +167,19 @@
 
 /* ── Sort Select ─────────────────────────────────── */
 .sort-select {
-  padding: 10px 20px;
-  background: var(--bg-surface);
+  padding: 10px 40px 10px 24px;
+  background: var(--bg-surface) url('data:image/svg+xml;utf8,<svg fill="%238E92A4" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') no-repeat right 16px center;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
   color: var(--text-primary);
   font-size: 0.85rem;
+  font-weight: 500;
   cursor: pointer;
   font-family: var(--font-family);
-  transition: border-color var(--transition-normal);
+  transition: all var(--transition-normal);
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
 }
 
 .sort-select:focus {

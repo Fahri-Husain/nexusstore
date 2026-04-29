@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
 import { HiOutlineDownload, HiOutlineCollection } from 'react-icons/hi';
+import { staggerContainer, staggerItem } from '../lib/motionUtils';
 import './Library.css';
 
 export default function Library() {
@@ -10,62 +12,34 @@ export default function Library() {
   const [library, setLibrary] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) fetchLibrary();
-  }, [user]);
+  useEffect(() => { if (user) fetchLibrary(); }, [user]);
 
   const fetchLibrary = async () => {
     try {
       let data, error;
-
-      // Try with join first
       const result = await supabase
         .from('library')
         .select('*, games(*)')
         .eq('user_id', user.id)
         .eq('isdeleted', 0)
         .order('purchased_at', { ascending: false });
+      data = result.data; error = result.error;
 
-      data = result.data;
-      error = result.error;
-
-      // Fallback if FK relationship doesn't exist
-      if (error && error.code === 'PGRST200') {
-        console.warn('FK relationship missing for library→games, fetching without join...');
-        const libResult = await supabase
-          .from('library')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('isdeleted', 0)
-          .order('purchased_at', { ascending: false });
-
+      if (error?.code === 'PGRST200') {
+        const libResult = await supabase.from('library').select('*').eq('user_id', user.id).eq('isdeleted', 0).order('purchased_at', { ascending: false });
         if (libResult.error) throw libResult.error;
-
-        // Fetch game details separately
         const gameIds = (libResult.data || []).map(l => l.game_id).filter(Boolean);
         let gamesMap = {};
         if (gameIds.length > 0) {
-          const gamesResult = await supabase
-            .from('games')
-            .select('*')
-            .in('game_id', gameIds);
-          if (gamesResult.data) {
-            gamesResult.data.forEach(g => { gamesMap[g.game_id] = g; });
-          }
+          const gamesResult = await supabase.from('games').select('*').in('game_id', gameIds);
+          if (gamesResult.data) gamesResult.data.forEach(g => { gamesMap[g.game_id] = g; });
         }
-
-        data = (libResult.data || []).map(item => ({
-          ...item,
-          games: gamesMap[item.game_id] || null,
-        }));
-        error = null;
-      } else if (error) {
-        throw error;
-      }
+        data = (libResult.data || []).map(item => ({ ...item, games: gamesMap[item.game_id] || null }));
+      } else if (error) throw error;
 
       setLibrary(data || []);
-    } catch (error) {
-      console.error('Error loading library:', error);
+    } catch (err) {
+      console.error('Error loading library:', err);
     } finally {
       setLoading(false);
     }
@@ -73,67 +47,85 @@ export default function Library() {
 
   if (loading) {
     return (
-      <div className="page-container container">
-        <h1 className="section-title">Perpustakaan</h1>
-        <div className="library-grid">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="library-card-skeleton">
-              <div className="skeleton" style={{ aspectRatio: '3/4' }} />
-              <div style={{ padding: 16 }}>
-                <div className="skeleton" style={{ height: 18, width: '80%', marginBottom: 8 }} />
-                <div className="skeleton" style={{ height: 14, width: '50%' }} />
+      <div className="library-page">
+        <div className="container">
+          <h1 className="library-page-title">Perpustakaan</h1>
+          <div className="library-grid">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="library-card-skeleton">
+                <div style={{ aspectRatio: '3/4' }} />
+                <div style={{ padding: 12 }}>
+                  <div className="skeleton" style={{ height: 14, width: '80%', marginBottom: 6, borderRadius: 4 }} />
+                  <div className="skeleton" style={{ height: 10, width: '50%', borderRadius: 4 }} />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="page-container container">
-      <h1 className="section-title">Perpustakaan</h1>
+    <div className="library-page">
+      <div className="container">
+        <motion.h1
+          className="library-page-title"
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          Perpustakaan
+        </motion.h1>
 
-      {library.length === 0 ? (
-        <div className="library-empty animate-fadeIn">
-          <HiOutlineCollection className="library-empty-icon" />
-          <h2>Perpustakaan Kosong</h2>
-          <p>Kamu belum memiliki game. Beli game pertamamu sekarang!</p>
-          <Link to="/" className="btn btn-primary btn-lg">Jelajahi Game</Link>
-        </div>
-      ) : (
-        <div className="library-grid animate-fadeIn">
-          {library.map(item => (
-            <div key={item.id} className="library-card glass-card">
-              <Link to={`/game/${item.games?.game_id || item.game_id}`} className="library-card-image">
-                <img
-                  src={item.games?.image_url}
-                  alt={item.games?.title}
-                  onError={(e) => {
-                    if (!e.target.dataset.hasError) {
-                      e.target.dataset.hasError = 'true';
-                      e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect fill="#14141F" width="300" height="400"/><text fill="#D4A853" font-family="sans-serif" font-size="16" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${(item.games?.title || 'Game').substring(0, 18)}</text></svg>`)}`;
-                    }
-                  }}
-                />
-                <div className="library-card-overlay">
-                  <button className="btn btn-primary btn-sm">
-                    <HiOutlineDownload /> Download
-                  </button>
-                </div>
-              </Link>
-              <div className="library-card-info">
-                <Link to={`/game/${item.games?.game_id || item.game_id}`} className="library-card-title">
-                  {item.games?.title || 'Game'}
+        {library.length === 0 ? (
+          <div className="library-empty">
+            <HiOutlineCollection className="library-empty-icon" />
+            <h2>Perpustakaan Kosong</h2>
+            <p>Kamu belum memiliki game. Beli game pertamamu sekarang!</p>
+            <Link to="/collection" className="btn btn-primary" style={{ marginTop: 8 }}>
+              Jelajahi Game
+            </Link>
+          </div>
+        ) : (
+          <motion.div
+            className="library-grid"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="show"
+          >
+            {library.map(item => (
+              <motion.div key={item.id} className="library-card" variants={staggerItem}>
+                <Link to={`/game/${item.games?.game_id || item.game_id}`} className="library-card-image">
+                  <img
+                    src={item.games?.image_url}
+                    alt={item.games?.title}
+                    onError={e => {
+                      if (!e.target.dataset.hasError) {
+                        e.target.dataset.hasError = 'true';
+                        e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="267"><rect fill="#14141F" width="200" height="267"/><text fill="#555" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${(item.games?.title || 'Game').substring(0, 16)}</text></svg>`)}`;
+                      }
+                    }}
+                  />
+                  <div className="library-card-overlay">
+                    <button className="library-download-btn">
+                      <HiOutlineDownload /> Unduh
+                    </button>
+                  </div>
                 </Link>
-                <span className="library-card-date">
-                  Dibeli: {new Date(item.purchased_at).toLocaleDateString('id-ID')}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+                <div className="library-card-info">
+                  <Link to={`/game/${item.games?.game_id || item.game_id}`} className="library-card-title">
+                    {item.games?.title || 'Game'}
+                  </Link>
+                  <span className="library-card-date">
+                    {new Date(item.purchased_at).toLocaleDateString('id-ID')}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

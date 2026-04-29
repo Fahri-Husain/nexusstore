@@ -55,6 +55,13 @@
   color: var(--text-primary);
 }
 
+.hero-title-gradient {
+  background: linear-gradient(180deg, #FFFFFF 0%, #A0A0B0 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .hero-subtitle {
   font-size: clamp(0.9rem, 1.5vw, 1.1rem);
   color: var(--text-muted);

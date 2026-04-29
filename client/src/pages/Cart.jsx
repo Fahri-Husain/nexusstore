@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { HiOutlineTrash, HiArrowRight, HiArrowLeft, HiOutlineShoppingCart } from 'react-icons/hi';
-import { AnimatedButton, AnimatedLink } from '../lib/motionUtils';
+import { HiOutlineTrash, HiArrowRight } from 'react-icons/hi';
+import { motion } from 'framer-motion';
+import { AnimatedButton, AnimatedLink, staggerContainer, staggerItem } from '../lib/motionUtils';
 import toast from 'react-hot-toast';
 import './Cart.css';
 
@@ -27,96 +28,112 @@ export default function Cart() {
 
   if (cartItems.length === 0) {
     return (
-      <div className="page-container container">
-        <Link to="/" className="back-link">
-          <HiArrowLeft /> Kembali ke Beranda
-        </Link>
-        <div className="cart-empty animate-fadeIn">
-          <div className="cart-empty-icon">
-            <HiOutlineShoppingCart />
+      <div className="cart-page">
+        <div className="cart-hero">
+          <div className="cart-hero-glow" />
+          <div className="container">
+            <h1 className="cart-title" style={{ marginBottom: '16px' }}>Keranjang Belanja</h1>
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '24px', fontSize: '1.05rem' }}>
+                Belum ada game di keranjang. Yuk jelajahi katalog kami!
+              </p>
+              <AnimatedLink to="/" className="btn btn-primary btn-lg">
+                Jelajahi Game
+              </AnimatedLink>
+            </motion.div>
           </div>
-          <h2>Keranjang Kosong</h2>
-          <p>Belum ada game di keranjang. Yuk jelajahi katalog kami!</p>
-          <AnimatedLink to="/" className="btn btn-primary btn-lg">
-            Jelajahi Game
-          </AnimatedLink>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="page-container container">
-      <Link to="/" className="back-link">
-        <HiArrowLeft /> Kembali ke Beranda
-      </Link>
-      <h1 className="section-title">Keranjang Belanja</h1>
-
-      <div className="cart-layout animate-fadeIn">
-        <div className="cart-items">
-          {cartItems.map(item => (
-            <div key={item.game_id} className="cart-item glass-card">
-              <Link to={`/game/${item.game_id}`} className="cart-item-image">
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  onError={(e) => {
-                    if (!e.target.dataset.hasError) {
-                      e.target.dataset.hasError = 'true';
-                      e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="260"><rect fill="#14141F" width="200" height="260"/><text fill="#D4A853" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${item.title.substring(0, 18)}</text></svg>`)}`;
-                    }
-                  }}
-                />
-              </Link>
-              <div className="cart-item-info">
-                <Link to={`/game/${item.game_id}`} className="cart-item-title">{item.title}</Link>
-                <div className="cart-item-meta">
-                  {item.platform && <span className="platform-tag">{item.platform}</span>}
-                </div>
-                <div className="cart-item-genres">
-                  {item.category && <span className="genre-tag">{item.category}</span>}
-                </div>
-              </div>
-              <div className="cart-item-price-section">
-                {item.discount > 0 && (
-                  <span className="cart-discount">-{item.discount}%</span>
-                )}
-                <div className="cart-item-prices">
-                  {item.discount > 0 && (
-                    <span className="cart-price-original">{formatPrice(item.price)}</span>
-                  )}
-                  <span className="cart-price-current">{formatPrice(getDiscountedPrice(item))}</span>
-                </div>
-              </div>
-              <AnimatedButton className="cart-remove-btn" onClick={() => handleRemove(item)} aria-label="Hapus">
-                <HiOutlineTrash />
-              </AnimatedButton>
-            </div>
-          ))}
+    <div className="cart-page">
+      <div className="cart-hero">
+        <div className="cart-hero-glow" />
+        <div className="container">
+          <h1 className="cart-title">Keranjang Belanja</h1>
         </div>
+      </div>
 
-        <div className="cart-summary glass-card">
-          <h3 className="summary-title">Ringkasan Pesanan</h3>
-          <div className="summary-items">
+      <div className="container cart-content">
+        <motion.div 
+          className="cart-layout"
+          initial="hidden"
+          animate="show"
+          variants={staggerContainer}
+        >
+          <div className="cart-items">
             {cartItems.map(item => (
-              <div key={item.game_id} className="summary-item">
-                <span className="summary-item-name">{item.title}</span>
-                <span className="summary-item-price">{formatPrice(getDiscountedPrice(item))}</span>
-              </div>
+              <motion.div key={item.game_id} className="cart-item glass-panel" variants={staggerItem}>
+                <Link to={`/game/${item.game_id}`} className="cart-item-image">
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    onError={(e) => {
+                      if (!e.target.dataset.hasError) {
+                        e.target.dataset.hasError = 'true';
+                        e.target.src = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="260"><rect fill="#14141F" width="200" height="260"/><text fill="#D4A853" font-family="sans-serif" font-size="14" x="50%" y="50%" text-anchor="middle" dominant-baseline="middle">${item.title.substring(0, 18)}</text></svg>`)}`;
+                      }
+                    }}
+                  />
+                </Link>
+                <div className="cart-item-info">
+                  <Link to={`/game/${item.game_id}`} className="cart-item-title">{item.title}</Link>
+                  <div className="cart-item-meta">
+                    {item.platform && <span className="platform-tag">{item.platform}</span>}
+                  </div>
+                  <div className="cart-item-genres">
+                    {item.category && <span className="genre-tag">{item.category}</span>}
+                  </div>
+                </div>
+                <div className="cart-item-price-section">
+                  {item.discount > 0 && (
+                    <span className="cart-discount">-{item.discount}%</span>
+                  )}
+                  <div className="cart-item-prices">
+                    {item.discount > 0 && (
+                      <span className="cart-price-original">{formatPrice(item.price)}</span>
+                    )}
+                    <span className="cart-price-current">{formatPrice(getDiscountedPrice(item))}</span>
+                  </div>
+                </div>
+                <AnimatedButton className="cart-remove-btn" onClick={() => handleRemove(item)} aria-label="Hapus">
+                  <HiOutlineTrash />
+                </AnimatedButton>
+              </motion.div>
             ))}
           </div>
-          <div className="summary-divider" />
-          <div className="summary-total">
-            <span>Total</span>
-            <span className="summary-total-price">{formatPrice(getTotal())}</span>
+
+          <div className="cart-summary-container">
+            <div className="cart-summary glass-panel">
+              <h3 className="summary-title">Ringkasan Pesanan</h3>
+              <div className="summary-items">
+                {cartItems.map(item => (
+                  <div key={item.game_id} className="summary-item">
+                    <span className="summary-item-name">{item.title}</span>
+                    <span className="summary-item-price">{formatPrice(getDiscountedPrice(item))}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="summary-divider" />
+              <div className="summary-total">
+                <span>Total</span>
+                <span className="summary-total-price">{formatPrice(getTotal())}</span>
+              </div>
+              <AnimatedLink to="/checkout" className="btn btn-primary btn-lg" style={{ width: '100%' }}>
+                Checkout <HiArrowRight />
+              </AnimatedLink>
+              <AnimatedButton className="btn btn-danger btn-sm" onClick={() => { clearCart(); toast.success('Keranjang dikosongkan'); }} style={{ width: '100%' }}>
+                Kosongkan Keranjang
+              </AnimatedButton>
+            </div>
           </div>
-          <AnimatedLink to="/checkout" className="btn btn-primary btn-lg" style={{ width: '100%' }}>
-            Checkout <HiArrowRight />
-          </AnimatedLink>
-          <AnimatedButton className="btn btn-danger btn-sm" onClick={() => { clearCart(); toast.success('Keranjang dikosongkan'); }} style={{ width: '100%' }}>
-            Kosongkan Keranjang
-          </AnimatedButton>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
