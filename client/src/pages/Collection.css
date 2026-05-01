@@ -276,14 +276,16 @@
   }
 
   .genre-filters {
-    margin-left: calc(-1 * var(--spacing-lg));
-    margin-right: calc(-1 * var(--spacing-lg));
-    padding-left: var(--spacing-lg);
-    padding-right: var(--spacing-lg);
+    margin-left: calc(-1 * var(--spacing-md));
+    margin-right: calc(-1 * var(--spacing-md));
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
   }
 
   .sort-select {
@@ -305,5 +307,6 @@
   .genre-filter-btn {
     padding: 8px 16px;
     font-size: 0.8rem;
+    scroll-snap-align: start;
   }
 }

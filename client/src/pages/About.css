@@ -88,6 +88,7 @@
   background: linear-gradient(180deg, #FFFFFF 0%, #8E92A4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .about-stat-label {

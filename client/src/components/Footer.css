@@ -150,8 +150,8 @@
   
   .footer-brand {
     grid-column: span 2;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
   }
   
   .footer-desc {
@@ -161,14 +161,15 @@
   .footer-bottom {
     flex-direction: column;
     gap: 16px;
-    text-align: center;
+    text-align: left;
+    align-items: flex-start;
   }
 }
 
 @media (max-width: 480px) {
   .footer-grid {
     grid-template-columns: 1fr;
-    text-align: center;
+    text-align: left;
   }
   
   .footer-brand {
@@ -176,6 +177,6 @@
   }
   
   .footer-links {
-    align-items: center;
+    align-items: flex-start;
   }
 }

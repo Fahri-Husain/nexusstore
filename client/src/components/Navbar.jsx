@@ -196,24 +196,24 @@ export default function Navbar() {
                   </div>
                 )}
 
-                <Link to="/" className="mobile-link" onClick={() => setMenuVisible(false)}>BERANDA</Link>
-                <Link to="/collection" className="mobile-link" onClick={() => setMenuVisible(false)}>KOLEKSI</Link>
-                <Link to="/about" className="mobile-link" onClick={() => setMenuVisible(false)}>TENTANG</Link>
+                <Link to="/" className="mobile-link" onClick={() => setMenuVisible(false)}>Beranda</Link>
+                <Link to="/collection" className="mobile-link" onClick={() => setMenuVisible(false)}>Koleksi</Link>
+                <Link to="/about" className="mobile-link" onClick={() => setMenuVisible(false)}>Tentang</Link>
                 <Link to="/cart" className="mobile-link" onClick={() => setMenuVisible(false)}>
-                  KERANJANG {cartCount > 0 && <span className="badge">{cartCount}</span>}
+                  Keranjang {cartCount > 0 && <span className="badge">{cartCount}</span>}
                 </Link>
 
                 {user ? (
                   <>
                     <div className="mobile-divider" />
-                    <Link to="/profile" className="mobile-link" onClick={() => setMenuVisible(false)}>PROFIL</Link>
-                    <Link to="/library" className="mobile-link" onClick={() => setMenuVisible(false)}>PERPUSTAKAAN</Link>
-                    <Link to="/orders" className="mobile-link" onClick={() => setMenuVisible(false)}>PESANAN</Link>
-                    {isAdmin && <Link to="/admin" className="mobile-link admin" onClick={() => setMenuVisible(false)}>ADMIN</Link>}
-                    <button className="mobile-link logout" onClick={handleSignOut}>KELUAR</button>
+                    <Link to="/profile" className="mobile-link" onClick={() => setMenuVisible(false)}>Profil</Link>
+                    <Link to="/library" className="mobile-link" onClick={() => setMenuVisible(false)}>Perpustakaan</Link>
+                    <Link to="/orders" className="mobile-link" onClick={() => setMenuVisible(false)}>Pesanan</Link>
+                    {isAdmin && <Link to="/admin" className="mobile-link admin" onClick={() => setMenuVisible(false)}>Admin</Link>}
+                    <button className="mobile-link mobile-btn-logout" onClick={handleSignOut}>Keluar</button>
                   </>
                 ) : (
-                  <Link to="/login" className="mobile-link" onClick={() => setMenuVisible(false)}>MASUK</Link>
+                  <Link to="/login" className="mobile-link mobile-btn-login" onClick={() => setMenuVisible(false)}>Masuk</Link>
                 )}
               </div>
             </motion.div>
