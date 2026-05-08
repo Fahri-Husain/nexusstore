@@ -158,6 +158,29 @@ export default function AdminPanel() {
     }
   };
 
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const { error } = await supabase.from('orders').update({ status: parseInt(newStatus), lastupdateddate: new Date().toISOString() }).eq('id', orderId);
+      if (error) throw error;
+      toast.success('Status pesanan berhasil diperbarui');
+      fetchData();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId, orderCode) => {
+    if (!confirm(`Yakin hapus order ${orderCode}?`)) return;
+    try {
+      const { error } = await supabase.from('orders').update({ isdeleted: 1, lastupdateddate: new Date().toISOString() }).eq('id', orderId);
+      if (error) throw error;
+      toast.success('Order berhasil dihapus');
+      fetchData();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
   const formatPrice = (price) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
 
@@ -622,6 +645,7 @@ export default function AdminPanel() {
                         <th>Total</th>
                         <th>Status</th>
                         <th>Metode</th>
+                        <th>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -645,11 +669,25 @@ export default function AdminPanel() {
                           </td>
                           <td><strong>{formatPrice(order.total_amount)}</strong></td>
                           <td>
-                            <span className={`badge badge-${(STATUS_MAP[order.status] || {}).type || 'danger'}`}>
-                              {(STATUS_MAP[order.status] || {}).label || 'Unknown'}
-                            </span>
+                            <select 
+                              className={`badge badge-${(STATUS_MAP[order.status] || {}).type || 'danger'}`}
+                              value={order.status}
+                              onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                              style={{ border: 'none', appearance: 'auto', cursor: 'pointer', outline: 'none' }}
+                            >
+                              <option value="1">Menunggu</option>
+                              <option value="2">Berhasil</option>
+                              <option value="3">Kadaluarsa</option>
+                              <option value="4">Dibatalkan</option>
+                              <option value="5">Gagal</option>
+                            </select>
                           </td>
                           <td>{order.payment_method || '-'}</td>
+                          <td>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteOrder(order.id, order.order_code)} title="Hapus Order">
+                              <HiOutlineTrash />
+                            </button>
+                          </td>
                         </tr>
                       ))}
                     </tbody>

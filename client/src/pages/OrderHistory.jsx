@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { HiOutlineClock, HiCheckCircle, HiXCircle, HiClock, HiOutlineCollection } from 'react-icons/hi';
 import { staggerContainer, staggerItem } from '../lib/motionUtils';
+import toast from 'react-hot-toast';
 import './OrderHistory.css';
 
 const STATUS_MAP = {
@@ -49,6 +50,25 @@ export default function OrderHistory() {
     } catch (err) {
       console.error(err);
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelOrder = async (orderId) => {
+    if (!confirm('Yakin ingin membatalkan pesanan ini?')) return;
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 4 }) // 4 = Dibatalkan
+        .eq('id', orderId);
+
+      if (error) throw error;
+      toast.success('Pesanan berhasil dibatalkan');
+      fetchOrders();
+    } catch (error) {
+      console.error('Error canceling order:', error);
+      toast.error('Gagal membatalkan pesanan');
       setLoading(false);
     }
   };
@@ -151,9 +171,20 @@ export default function OrderHistory() {
 
                 {/* Footer */}
                 <div className="order-card-footer">
-                  <span className="order-payment-method">
-                    {order.payment_method ? `Via ${order.payment_method}` : '–'}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <span className="order-payment-method">
+                      {order.payment_method ? `Via ${order.payment_method}` : '–'}
+                    </span>
+                    {order.status === 1 && (
+                      <button 
+                        className="btn btn-outline btn-sm" 
+                        style={{ color: 'var(--danger)', borderColor: 'var(--danger)', alignSelf: 'flex-start' }}
+                        onClick={() => handleCancelOrder(order.id)}
+                      >
+                        Batalkan Pesanan
+                      </button>
+                    )}
+                  </div>
                   <div className="order-total">
                     Total: <strong>{formatPrice(order.total_amount)}</strong>
                   </div>
