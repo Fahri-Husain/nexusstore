@@ -83,23 +83,26 @@ export default function Checkout() {
             } catch (err) {
               console.error('Error confirming payment:', err);
             }
-            clearCart();
             toast.success('Pembayaran berhasil!');
-            navigate('/payment/success');
+            window.location.reload(); // Refresh halaman orders
           },
           onPending: function (result) {
-            toast('Menunggu pembayaran...', { icon: '⏳' });
-            navigate('/payment/pending');
+            toast('Silakan selesaikan pembayaran Anda.', { icon: '⏳' });
+            window.location.reload();
           },
           onError: function (result) {
             toast.error('Pembayaran gagal');
-            navigate('/payment/error');
+            window.location.reload();
           },
           onClose: function () {
-            toast('Pembayaran dibatalkan', { icon: '❌' });
-            setLoading(false);
+            toast('Pembayaran belum selesai. Anda bisa melanjutkannya nanti.', { icon: 'ℹ️' });
           }
         });
+        
+        // Segera kosongkan keranjang dan pindah ke halaman riwayat pesanan
+        clearCart();
+        navigate('/orders', { replace: true });
+        
       } else {
         throw new Error('Midtrans Snap belum dimuat. Pastikan Client Key sudah benar.');
       }

@@ -19,6 +19,8 @@ const STATUS_MAP = {
 const formatPrice = (price) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
 
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+
 export default function OrderHistory() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
@@ -70,6 +72,39 @@ export default function OrderHistory() {
       console.error('Error canceling order:', error);
       toast.error('Gagal membatalkan pesanan');
       setLoading(false);
+    }
+  };
+
+  const handleContinuePayment = (snapToken, orderCode) => {
+    if (window.snap) {
+      window.snap.pay(snapToken, {
+        onSuccess: async function (result) {
+          try {
+            await fetch(`${API_URL}/payment/confirm-success`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ order_code: orderCode }),
+            });
+          } catch (err) {
+            console.error('Error confirming payment:', err);
+          }
+          toast.success('Pembayaran berhasil!');
+          fetchOrders();
+        },
+        onPending: function (result) {
+          toast('Silakan selesaikan pembayaran Anda.', { icon: '⏳' });
+          fetchOrders();
+        },
+        onError: function (result) {
+          toast.error('Pembayaran gagal');
+          fetchOrders();
+        },
+        onClose: function () {
+          toast('Pembayaran belum selesai.', { icon: 'ℹ️' });
+        }
+      });
+    } else {
+      toast.error('Sistem pembayaran belum siap. Silakan refresh halaman.');
     }
   };
 
@@ -176,13 +211,23 @@ export default function OrderHistory() {
                       {order.payment_method ? `Via ${order.payment_method}` : '–'}
                     </span>
                     {order.status === 1 && (
-                      <button 
-                        className="btn btn-outline btn-sm" 
-                        style={{ color: 'var(--danger)', borderColor: 'var(--danger)', alignSelf: 'flex-start' }}
-                        onClick={() => handleCancelOrder(order.id)}
-                      >
-                        Batalkan Pesanan
-                      </button>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        {order.companycode && (
+                          <button 
+                            className="btn btn-primary btn-sm"
+                            onClick={() => handleContinuePayment(order.companycode, order.order_code)}
+                          >
+                            Lanjutkan Pembayaran
+                          </button>
+                        )}
+                        <button 
+                          className="btn btn-outline btn-sm" 
+                          style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}
+                          onClick={() => handleCancelOrder(order.id)}
+                        >
+                          Batalkan
+                        </button>
+                      </div>
                     )}
                   </div>
                   <div className="order-total">
