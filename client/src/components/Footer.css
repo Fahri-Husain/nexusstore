@@ -34,16 +34,8 @@
 }
 
 .footer-logo .logo-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--text-primary);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: var(--bg-primary);
+  font-size: 1.8rem;
+  color: var(--text-primary);
 }
 
 .footer-logo .logo-text {
