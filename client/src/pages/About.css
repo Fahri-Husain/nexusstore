@@ -1,7 +1,7 @@
 /* ── About Page — Dark Premium ────────────────────── */
 .about-page {
   min-height: calc(100vh - 200px);
-  background: var(--bg-primary);
+  background: transparent;
 }
 
 /* ── Hero ────────────────────────────────────────── */

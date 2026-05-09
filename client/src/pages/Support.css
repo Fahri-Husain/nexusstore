@@ -2,7 +2,7 @@
 
 .support-page {
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: transparent;
   padding-bottom: var(--spacing-3xl);
 }
 

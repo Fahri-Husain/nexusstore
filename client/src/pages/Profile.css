@@ -1,7 +1,7 @@
 /* ── Profile Page ─────────────────────────────────── */
 .profile-page {
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: transparent;
   padding-top: calc(var(--navbar-height) + var(--spacing-2xl));
   padding-bottom: var(--spacing-3xl);
 }

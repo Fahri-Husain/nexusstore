@@ -2,7 +2,7 @@
 
 .gd-page {
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: transparent;
   padding-top: calc(var(--navbar-height) + var(--spacing-lg));
   padding-bottom: var(--spacing-3xl);
 }
