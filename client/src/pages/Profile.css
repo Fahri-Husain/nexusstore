@@ -19,7 +19,7 @@
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-xl);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-md);
   text-align: center;
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
@@ -126,7 +126,7 @@
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: var(--radius-xl);
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-lg);
   box-shadow: 0 8px 32px rgba(0,0,0,0.3);
 }
 
