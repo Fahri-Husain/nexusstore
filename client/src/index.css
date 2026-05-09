@@ -240,4 +240,8 @@ a {
     padding: 14px 16px;
     font-size: 0.95rem;
   }
+
+  .container {
+    padding: 0 var(--spacing-sm);
+  }
 }
