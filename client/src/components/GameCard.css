@@ -191,4 +191,10 @@
   .game-card-large .game-card-title {
     font-size: 1.2rem;
   }
+  .price-current {
+    font-size: 0.85rem;
+  }
+  .price-original {
+    font-size: 0.65rem;
+  }
 }
