@@ -26,7 +26,7 @@ function App() {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   return (
-    <div className="app">
+    <div className={`app ${!isAuthPage ? 'app-fancy-bg' : ''}`}>
       <ScrollToTop />
       {!isAuthPage && <Navbar />}
       
