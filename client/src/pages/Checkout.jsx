@@ -70,6 +70,9 @@ export default function Checkout() {
 
       const orderCode = data.order_code;
 
+      // Simpan orderCode ke localStorage untuk berjaga-jaga jika reload di mobile
+      localStorage.setItem('pending_order', orderCode);
+
       if (window.snap) {
         window.snap.pay(data.snap_token, {
           onSuccess: async function (result) {
@@ -83,9 +86,10 @@ export default function Checkout() {
             } catch (err) {
               console.error('Error confirming payment:', err);
             }
+            localStorage.removeItem('pending_order');
             toast.success('Pembayaran berhasil!');
             clearCart();
-            navigate('/orders', { replace: true });
+            navigate('/library', { replace: true });
           },
           onPending: function (result) {
             toast('Silakan selesaikan pembayaran Anda.', { icon: '⏳' });

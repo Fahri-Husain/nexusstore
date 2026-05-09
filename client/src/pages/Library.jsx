@@ -16,6 +16,22 @@ export default function Library() {
 
   const fetchLibrary = async () => {
     try {
+      // Cek apakah ada pending order dari checkout (berguna untuk mobile yang sering reload)
+      const pendingOrder = localStorage.getItem('pending_order');
+      if (pendingOrder) {
+        try {
+          const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+          await fetch(`${API_URL}/payment/confirm-success`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_code: pendingOrder }),
+          });
+          localStorage.removeItem('pending_order');
+        } catch (err) {
+          console.error('Error confirming pending order:', err);
+        }
+      }
+
       let data, error;
       const result = await supabase
         .from('library')
