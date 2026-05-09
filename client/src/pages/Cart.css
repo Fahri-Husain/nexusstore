@@ -338,11 +338,11 @@
 
   .cart-summary {
     position: static;
-    padding: var(--spacing-xl);
+    padding: var(--spacing-md);
   }
 
   .cart-item {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
     gap: 12px;
     flex-wrap: nowrap;
   }

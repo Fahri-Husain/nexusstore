@@ -266,14 +266,14 @@
 
   .checkout-payment {
     position: static;
-    padding: var(--spacing-xl);
+    padding: var(--spacing-md);
   }
 }
 
 @media (max-width: 480px) {
   .checkout-items,
   .checkout-payment {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
   }
 
   .checkout-item {
