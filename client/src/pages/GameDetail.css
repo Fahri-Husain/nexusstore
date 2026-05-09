@@ -358,9 +358,15 @@
     grid-template-columns: 1fr;
   }
 
+  .gd-right,
+  .gd-req-block {
+    padding: var(--spacing-md);
+  }
+
   .gd-action-bar {
     flex-wrap: wrap;
     gap: var(--spacing-md);
+    padding: var(--spacing-md);
   }
 
   .gd-action-price {
@@ -384,23 +390,41 @@
 
 @media (max-width: 480px) {
   .gd-page {
-    padding-top: calc(var(--navbar-height) + var(--spacing-xl));
+    padding-top: calc(var(--navbar-height) + var(--spacing-lg));
   }
 
   .gd-title {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
+  }
+
+  .gd-short-desc {
+    font-size: 0.8rem;
+  }
+
+  .gd-meta-label {
+    font-size: 0.65rem;
+  }
+
+  .gd-meta-val {
+    font-size: 0.8rem;
   }
 
   .gd-thumb {
-    width: 72px;
-    height: 46px;
+    width: 60px;
+    height: 40px;
+  }
+
+  .gd-right,
+  .gd-req-block {
+    padding: var(--spacing-sm);
   }
 
   .gd-action-final {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
 
   .gd-action-bar {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
   }
 }
