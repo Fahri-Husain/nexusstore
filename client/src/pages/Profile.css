@@ -63,7 +63,7 @@
   font-size: 0.82rem;
   color: var(--text-muted);
   margin-bottom: var(--spacing-md);
-  word-break: break-all;
+  word-wrap: break-word; /* Mengganti break-all agar rapi */
 }
 
 .profile-role-badge {
@@ -88,8 +88,10 @@
 }
 
 .profile-stat-row {
-  display: flex;
-  justify-content: space-around;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
 }
 
 .profile-stat {
@@ -111,10 +113,11 @@
 }
 
 .profile-stat-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem; /* Diperkecil sedikit agar tidak menumpuk */
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+  text-align: center;
 }
 
 /* ── Right Card ───────────────────────────────────── */
