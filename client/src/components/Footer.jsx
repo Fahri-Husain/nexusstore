@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { HiOutlineMail, HiOutlineLocationMarker } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlineLocationMarker, HiLightningBolt } from 'react-icons/hi';
 import { FaTwitter, FaInstagram, FaDiscord, FaYoutube } from 'react-icons/fa';
 import './Footer.css';
 
@@ -10,8 +10,8 @@ export default function Footer() {
         <div className="footer-grid">
           <div className="footer-brand">
             <div className="footer-logo">
-              <div className="logo-icon">N</div>
-              <span className="logo-text">Nexus Store</span>
+              <HiLightningBolt className="logo-icon" />
+              <span className="logo-text">NEXUS STORE</span>
             </div>
             <p className="footer-desc">
               Toko game digital terpercaya dengan koleksi game terlengkap dan harga terbaik. Pembayaran aman & mudah.
