@@ -19,17 +19,37 @@ const STATUS_MAP = {
 const formatPrice = (price) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
 
+import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
 export default function OrderHistory() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { removeFromCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => { if (user) fetchOrders(); }, [user]);
 
   const fetchOrders = async () => {
     try {
+      // Cek apakah ada pending order dari pembayaran yang sukses tapi halaman ke-reload
+      const pendingOrder = localStorage.getItem('pending_order');
+      if (pendingOrder) {
+        try {
+          await fetch(`${API_URL}/payment/confirm-success`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_code: pendingOrder }),
+          });
+          localStorage.removeItem('pending_order');
+        } catch (err) {
+          console.error('Error confirming pending order:', err);
+        }
+      }
+
       let data, error;
       try {
         const result = await supabase
@@ -75,7 +95,13 @@ export default function OrderHistory() {
     }
   };
 
-  const handleContinuePayment = (snapToken, orderCode) => {
+  const handleContinuePayment = (order) => {
+    const snapToken = order.shipping_address;
+    const orderCode = order.order_code;
+
+    // Simpan pending order ke localStorage untuk jaga-jaga kalau page reload di mobile
+    localStorage.setItem('pending_order', orderCode);
+
     if (window.snap) {
       window.snap.pay(snapToken, {
         onSuccess: async function (result) {
@@ -88,8 +114,15 @@ export default function OrderHistory() {
           } catch (err) {
             console.error('Error confirming payment:', err);
           }
+          localStorage.removeItem('pending_order');
           toast.success('Pembayaran berhasil!');
-          fetchOrders();
+          
+          // Hapus item yang baru dibeli dari keranjang
+          if (order.order_items) {
+            order.order_items.forEach(item => removeFromCart(item.game_id));
+          }
+          
+          navigate('/library', { replace: true });
         },
         onPending: function (result) {
           toast('Silakan selesaikan pembayaran Anda.', { icon: '⏳' });
@@ -101,6 +134,7 @@ export default function OrderHistory() {
         },
         onClose: function () {
           toast('Pembayaran belum selesai.', { icon: 'ℹ️' });
+          localStorage.removeItem('pending_order');
         }
       });
     } else {
@@ -215,7 +249,7 @@ export default function OrderHistory() {
                         {order.shipping_address && (
                           <button 
                             className="btn btn-primary btn-sm"
-                            onClick={() => handleContinuePayment(order.shipping_address, order.order_code)}
+                            onClick={() => handleContinuePayment(order)}
                           >
                             Lanjutkan Pembayaran
                           </button>
