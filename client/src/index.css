@@ -73,7 +73,11 @@
 }
 
 html, body {
-  background-color: var(--bg-primary);
+  /* Elegant Gradient Background - Deep Midnight to Charcoal/Black */
+  background-color: #070709;
+  background-image: radial-gradient(ellipse at top center, #151722 0%, #0a0b0e 60%, #050505 100%);
+  background-attachment: fixed;
+  
   color: var(--text-primary);
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
