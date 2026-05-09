@@ -131,12 +131,26 @@ export default function AdminPanel() {
 
     try {
       if (editingGame) {
-        const { error } = await supabase.from('games').update(gameData).eq('game_id', editingGame.game_id);
-        if (error) throw error;
+        const response = await fetch(`${API_URL}/games/admin/${editingGame.game_id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gameData)
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Gagal memperbarui game');
+        }
         toast.success('Game berhasil diperbarui!');
       } else {
-        const { error } = await supabase.from('games').insert({ ...gameData, status: 1, isdeleted: 0 });
-        if (error) throw error;
+        const response = await fetch(`${API_URL}/games/admin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(gameData)
+        });
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Gagal menambahkan game');
+        }
         toast.success('Game berhasil ditambahkan!');
       }
       setShowModal(false);
@@ -149,8 +163,13 @@ export default function AdminPanel() {
   const handleDelete = async (gameId, title) => {
     if (!confirm(`Yakin hapus game "${title}"?`)) return;
     try {
-      const { error } = await supabase.from('games').update({ isdeleted: 1, lastupdateddate: new Date().toISOString() }).eq('game_id', gameId);
-      if (error) throw error;
+      const response = await fetch(`${API_URL}/games/admin/${gameId}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Gagal menghapus game');
+      }
       toast.success('Game berhasil dihapus');
       fetchData();
     } catch (error) {

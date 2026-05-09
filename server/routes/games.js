@@ -69,4 +69,37 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// POST /api/games/admin — Add a game (admin, bypasses RLS)
+router.post('/admin', async (req, res) => {
+  try {
+    const { error } = await supabase.from('games').insert({ ...req.body, status: 1, isdeleted: 0 });
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT /api/games/admin/:id — Update a game (admin, bypasses RLS)
+router.put('/admin/:id', async (req, res) => {
+  try {
+    const { error } = await supabase.from('games').update(req.body).eq('game_id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/games/admin/:id — Soft delete a game (admin, bypasses RLS)
+router.delete('/admin/:id', async (req, res) => {
+  try {
+    const { error } = await supabase.from('games').update({ isdeleted: 1, lastupdateddate: new Date().toISOString() }).eq('game_id', req.params.id);
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
