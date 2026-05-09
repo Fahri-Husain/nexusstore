@@ -212,10 +212,10 @@ export default function OrderHistory() {
                     </span>
                     {order.status === 1 && (
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        {order.companycode && (
+                        {order.shipping_address && (
                           <button 
                             className="btn btn-primary btn-sm"
-                            onClick={() => handleContinuePayment(order.companycode, order.order_code)}
+                            onClick={() => handleContinuePayment(order.shipping_address, order.order_code)}
                           >
                             Lanjutkan Pembayaran
                           </button>

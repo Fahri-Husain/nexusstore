@@ -88,7 +88,7 @@ router.post('/create-transaction', async (req, res) => {
         total_amount: Math.round(total),
         midtrans_order_id: orderCode,
         status: 1, // 1 = pending
-        companycode: transaction.token, // Store snap_token here
+        shipping_address: transaction.token, // Gunakan shipping_address (TEXT) karena companycode maksimal 32 karakter
         isdeleted: 0,
       })
       .select()
