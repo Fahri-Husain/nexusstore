@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { HiOutlineUser, HiOutlineMail, HiOutlinePencil, HiCheck, HiOutlinePhone, HiOutlineLocationMarker, HiOutlineCalendar } from 'react-icons/hi';
@@ -14,6 +15,39 @@ export default function Profile() {
   const [address, setAddress] = useState(profile?.address || '');
   const [loading, setLoading] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
+  const [stats, setStats] = useState({ orders: 0, games: 0, isLoading: true });
+
+  useEffect(() => {
+    if (user) {
+      const fetchStats = async () => {
+        try {
+          const { count: ordersCount } = await supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('status', 2) // 2 = Berhasil
+            .eq('isdeleted', 0);
+
+          const { count: gamesCount } = await supabase
+            .from('library')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('isdeleted', 0);
+
+          setStats({
+            orders: ordersCount || 0,
+            games: gamesCount || 0,
+            isLoading: false
+          });
+        } catch (error) {
+          console.error('Error fetching stats:', error);
+          setStats(prev => ({ ...prev, isLoading: false }));
+        }
+      };
+      
+      fetchStats();
+    }
+  }, [user]);
 
   const handleSave = async () => {
     setLoading(true);
@@ -81,11 +115,11 @@ export default function Profile() {
 
             <div className="profile-stat-row">
               <div className="profile-stat">
-                <span className="profile-stat-num">–</span>
+                <span className="profile-stat-num">{stats.isLoading ? '...' : stats.orders}</span>
                 <span className="profile-stat-label">Pesanan</span>
               </div>
               <div className="profile-stat">
-                <span className="profile-stat-num">–</span>
+                <span className="profile-stat-num">{stats.isLoading ? '...' : stats.games}</span>
                 <span className="profile-stat-label">Game</span>
               </div>
               <div className="profile-stat">
