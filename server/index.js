@@ -6,6 +6,7 @@ const path = require('path');
 const gamesRoutes = require('./routes/games');
 const ordersRoutes = require('./routes/orders');
 const paymentRoutes = require('./routes/payment');
+const vouchersRoutes = require('./routes/vouchers');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +50,7 @@ app.use((req, res, next) => {
 app.use('/api/games', gamesRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/vouchers', vouchersRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

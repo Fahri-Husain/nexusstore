@@ -7,7 +7,7 @@ import {
   HiOutlineClipboardList, HiOutlineHome, HiOutlineRefresh,
   HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineStar,
   HiOutlineSearch, HiOutlineFilter, HiOutlineDownload, HiOutlineDocumentText,
-  HiOutlineChartBar, HiOutlineExclamationCircle,
+  HiOutlineChartBar, HiOutlineExclamationCircle, HiOutlineTicket,
 } from 'react-icons/hi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
@@ -30,6 +30,15 @@ export default function AdminPanel() {
   const [editingGame, setEditingGame] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
+
+  // ── Voucher State ────────────────────────────────
+  const [vouchers, setVouchers] = useState([]);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [editingVoucher, setEditingVoucher] = useState(null);
+  const [voucherForm, setVoucherForm] = useState({
+    code: '', description: '', discount_type: 'percent', discount_value: 10,
+    min_purchase: 0, max_uses: '', expired_at: '', is_active: true,
+  });
 
   // ── Order Filters ────────────────────────────────
   const [orderSearch, setOrderSearch] = useState('');
@@ -310,6 +319,7 @@ export default function AdminPanel() {
     { key: 'dashboard', label: 'Dashboard', icon: <HiOutlineViewGrid /> },
     { key: 'games', label: 'Games', icon: <HiOutlineCollection /> },
     { key: 'orders', label: 'Orders', icon: <HiOutlineClipboardList /> },
+    { key: 'vouchers', label: 'Voucher', icon: <HiOutlineTicket /> },
     { key: 'laporan', label: 'Laporan Penjualan', icon: <HiOutlineChartBar /> },
   ];
 
@@ -422,6 +432,76 @@ export default function AdminPanel() {
     w.document.close();
     w.focus();
     setTimeout(() => { w.print(); w.close(); }, 500);
+  };
+
+  // ── Voucher CRUD handlers ─────────────────────────────
+  const fetchVouchers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/vouchers`);
+      const data = await res.json();
+      setVouchers(data || []);
+    } catch (err) { console.error(err); }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'vouchers') fetchVouchers();
+  }, [activeTab]);
+
+  const openAddVoucher = () => {
+    setEditingVoucher(null);
+    setVoucherForm({ code: '', description: '', discount_type: 'percent', discount_value: 10, min_purchase: 0, max_uses: '', expired_at: '', is_active: true });
+    setShowVoucherModal(true);
+  };
+
+  const openEditVoucher = (v) => {
+    setEditingVoucher(v);
+    setVoucherForm({
+      code: v.code || '',
+      description: v.description || '',
+      discount_type: v.discount_type || 'percent',
+      discount_value: v.discount_value || 0,
+      min_purchase: v.min_purchase || 0,
+      max_uses: v.max_uses ?? '',
+      expired_at: v.expired_at ? v.expired_at.slice(0, 16) : '',
+      is_active: v.is_active ?? true,
+    });
+    setShowVoucherModal(true);
+  };
+
+  const handleVoucherSubmit = async (e) => {
+    e.preventDefault();
+    const body = {
+      ...voucherForm,
+      discount_value: parseFloat(voucherForm.discount_value),
+      min_purchase: parseFloat(voucherForm.min_purchase) || 0,
+      max_uses: voucherForm.max_uses !== '' ? parseInt(voucherForm.max_uses) : null,
+      expired_at: voucherForm.expired_at || null,
+    };
+    try {
+      const url = editingVoucher ? `${API_URL}/vouchers/${editingVoucher.id}` : `${API_URL}/vouchers`;
+      const method = editingVoucher ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+      toast.success(editingVoucher ? 'Voucher berhasil diperbarui!' : 'Voucher berhasil dibuat!');
+      setShowVoucherModal(false);
+      fetchVouchers();
+    } catch (err) { toast.error(err.message); }
+  };
+
+  const handleDeleteVoucher = (id, code) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Hapus Voucher',
+      message: `Yakin ingin menghapus voucher "${code}"? Tindakan ini tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_URL}/vouchers/${id}`, { method: 'DELETE' });
+          if (!res.ok) { const e = await res.json(); throw new Error(e.error); }
+          toast.success('Voucher berhasil dihapus');
+          fetchVouchers();
+        } catch (err) { toast.error(err.message); }
+      }
+    });
   };
 
   return (
@@ -931,6 +1011,71 @@ export default function AdminPanel() {
             </div>
           )}
 
+          {/* ─── VOUCHERS ─── */}
+          {activeTab === 'vouchers' && (
+            <div className="animate-fadeIn">
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3>Daftar Voucher <span className="admin-badge-count">{vouchers.length}</span></h3>
+                  <button className="btn btn-primary btn-sm" onClick={openAddVoucher}>
+                    <HiOutlinePlus /> Tambah Voucher
+                  </button>
+                </div>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Aksi</th>
+                        <th>Kode</th>
+                        <th>Deskripsi</th>
+                        <th>Diskon</th>
+                        <th>Min. Pembelian</th>
+                        <th>Penggunaan</th>
+                        <th>Expired</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vouchers.length === 0 ? (
+                        <tr><td colSpan="8" className="admin-table-empty">Belum ada voucher</td></tr>
+                      ) : vouchers.map(v => (
+                        <tr key={v.id}>
+                          <td>
+                            <div className="admin-actions">
+                              <button className="btn btn-outline btn-sm" onClick={() => openEditVoucher(v)} title="Edit">
+                                <HiOutlinePencil />
+                              </button>
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDeleteVoucher(v.id, v.code)} title="Hapus">
+                                <HiOutlineTrash />
+                              </button>
+                            </div>
+                          </td>
+                          <td><code className="admin-code">{v.code}</code></td>
+                          <td className="text-sm">{v.description || '-'}</td>
+                          <td>
+                            <span className="badge badge-warning">
+                              {v.discount_type === 'percent' ? `${v.discount_value}%` : formatPrice(v.discount_value)}
+                            </span>
+                          </td>
+                          <td>{v.min_purchase > 0 ? formatPrice(v.min_purchase) : '-'}</td>
+                          <td>{v.used_count ?? 0} / {v.max_uses ?? '∞'}</td>
+                          <td className="text-sm">
+                            {v.expired_at ? new Date(v.expired_at).toLocaleDateString('id-ID') : '–'}
+                          </td>
+                          <td>
+                            <span className={`badge badge-${v.is_active ? 'success' : 'danger'}`}>
+                              {v.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
 
@@ -1053,6 +1198,84 @@ export default function AdminPanel() {
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
                 <button type="submit" className="btn btn-primary">
                   {editingGame ? 'Simpan Perubahan' : 'Tambah Game'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── VOUCHER MODAL ─── */}
+      {showVoucherModal && (
+        <div className="modal-overlay" onClick={() => setShowVoucherModal(false)}>
+          <div className="modal-content animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingVoucher ? 'Edit Voucher' : 'Tambah Voucher Baru'}</h2>
+              <button className="modal-close" onClick={() => setShowVoucherModal(false)}>
+                <HiOutlineX />
+              </button>
+            </div>
+            <form className="modal-form" onSubmit={handleVoucherSubmit}>
+              <div className="modal-grid">
+                <div className="form-group">
+                  <label className="form-label">Kode Voucher *</label>
+                  <input className="form-input" required placeholder="contoh: NEXUS10"
+                    value={voucherForm.code}
+                    onChange={e => setVoucherForm({ ...voucherForm, code: e.target.value.toUpperCase() })} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Tipe Diskon</label>
+                  <select className="form-input" value={voucherForm.discount_type}
+                    onChange={e => setVoucherForm({ ...voucherForm, discount_type: e.target.value })}>
+                    <option value="percent">Persen (%)</option>
+                    <option value="fixed">Nominal (Rp)</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Nilai Diskon *</label>
+                  <input className="form-input" type="number" required min="0" step="0.01"
+                    placeholder={voucherForm.discount_type === 'percent' ? 'contoh: 10' : 'contoh: 50000'}
+                    value={voucherForm.discount_value}
+                    onChange={e => setVoucherForm({ ...voucherForm, discount_value: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Min. Pembelian (Rp)</label>
+                  <input className="form-input" type="number" min="0" placeholder="0 = tidak ada minimum"
+                    value={voucherForm.min_purchase}
+                    onChange={e => setVoucherForm({ ...voucherForm, min_purchase: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Maks. Penggunaan</label>
+                  <input className="form-input" type="number" min="1" placeholder="Kosongkan = tidak terbatas"
+                    value={voucherForm.max_uses}
+                    onChange={e => setVoucherForm({ ...voucherForm, max_uses: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Berlaku Hingga</label>
+                  <input className="form-input" type="datetime-local"
+                    value={voucherForm.expired_at}
+                    onChange={e => setVoucherForm({ ...voucherForm, expired_at: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Status</label>
+                  <select className="form-input" value={voucherForm.is_active ? 'true' : 'false'}
+                    onChange={e => setVoucherForm({ ...voucherForm, is_active: e.target.value === 'true' })}>
+                    <option value="true">Aktif</option>
+                    <option value="false">Nonaktif</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-group" style={{ marginTop: 16 }}>
+                <label className="form-label">Deskripsi</label>
+                <textarea className="form-input" rows={2} placeholder="Keterangan singkat tentang voucher ini..."
+                  value={voucherForm.description}
+                  onChange={e => setVoucherForm({ ...voucherForm, description: e.target.value })}
+                  style={{ resize: 'vertical' }} />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowVoucherModal(false)}>Batal</button>
+                <button type="submit" className="btn btn-primary">
+                  {editingVoucher ? 'Simpan Perubahan' : 'Buat Voucher'}
                 </button>
               </div>
             </form>
