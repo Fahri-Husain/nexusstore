@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -21,6 +21,15 @@ export default function Checkout() {
   const [voucherData, setVoucherData] = useState(null);
   const [voucherLoading, setVoucherLoading] = useState(false);
   const [voucherError, setVoucherError] = useState('');
+  const [availableVouchers, setAvailableVouchers] = useState([]);
+  const [showAvailVouchers, setShowAvailVouchers] = useState(false);
+
+  useEffect(() => {
+    fetch(`${API_URL}/vouchers/available`)
+      .then(r => r.json())
+      .then(data => setAvailableVouchers(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('id-ID', {
@@ -218,12 +227,62 @@ export default function Checkout() {
                 <span className="checkout-value">{user?.email}</span>
               </div>
 
-              {/* Voucher Input */}
+              {/* Voucher Section */}
               <div className="checkout-voucher">
-                <label className="checkout-label" style={{ marginBottom: 8, display: 'block' }}>
-                  <HiOutlineTicket style={{ marginRight: 6, verticalAlign: 'middle' }} />
-                  Kode Voucher
-                </label>
+                <div className="voucher-header">
+                  <label className="voucher-section-title">
+                    <HiOutlineTicket />
+                    Kode Voucher
+                  </label>
+                  {availableVouchers.length > 0 && (
+                    <button
+                      className="voucher-show-available"
+                      onClick={() => setShowAvailVouchers(v => !v)}
+                      type="button"
+                    >
+                      {showAvailVouchers ? 'Sembunyikan' : `Lihat ${availableVouchers.length} Voucher Tersedia`}
+                    </button>
+                  )}
+                </div>
+
+                {/* Available Vouchers List */}
+                {showAvailVouchers && (
+                  <div className="voucher-available-list">
+                    {availableVouchers.map(v => (
+                      <div
+                        key={v.code}
+                        className={`voucher-available-card ${voucherData?.code === v.code ? 'selected' : ''}`}
+                        onClick={() => {
+                          if (voucherData?.code === v.code) {
+                            removeVoucher();
+                          } else {
+                            setVoucherCode(v.code);
+                            setVoucherError('');
+                          }
+                          setShowAvailVouchers(false);
+                        }}
+                      >
+                        <div className="voucher-card-left">
+                          <span className="voucher-card-icon"><HiOutlineTicket /></span>
+                          <div>
+                            <span className="voucher-card-code">{v.code}</span>
+                            <span className="voucher-card-desc">{v.description || `Diskon ${v.discount_type === 'percent' ? v.discount_value + '%' : 'Rp ' + Number(v.discount_value).toLocaleString('id-ID')}`}</span>
+                          </div>
+                        </div>
+                        <div className="voucher-card-right">
+                          <span className="voucher-card-badge">
+                            {v.discount_type === 'percent' ? `${v.discount_value}%` : formatPrice(v.discount_value)}
+                          </span>
+                          {v.min_purchase > 0 && (
+                            <span className="voucher-card-min">Min. {formatPrice(v.min_purchase)}</span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Input & Applied State */}
                 {voucherData ? (
                   <div className="voucher-applied">
                     <HiOutlineCheckCircle className="voucher-check-icon" />
@@ -244,7 +303,7 @@ export default function Checkout() {
                     <input
                       className="voucher-input"
                       type="text"
-                      placeholder="Masukkan kode voucher"
+                      placeholder="Masukkan kode voucher..."
                       value={voucherCode}
                       onChange={e => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError(''); }}
                       onKeyDown={e => e.key === 'Enter' && applyVoucher()}

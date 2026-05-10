@@ -47,7 +47,7 @@ async function addGamesToLibrary(orderId) {
 // POST /api/payment/create-transaction
 router.post('/create-transaction', async (req, res) => {
   try {
-    const { user_id, user_email, items, total } = req.body;
+    const { user_id, user_email, items, total, voucher_code, voucher_discount } = req.body;
 
     if (!user_id || !items || items.length === 0 || !total) {
       return res.status(400).json({ error: 'Data transaksi tidak lengkap' });
@@ -56,18 +56,35 @@ router.post('/create-transaction', async (req, res) => {
     // Generate unique order code
     const orderCode = `NEXUS-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
+    // Build item_details — Midtrans requires gross_amount === sum of item_details prices
+    const itemDetails = items.map(item => ({
+      id: item.id,
+      name: item.title.substring(0, 50),
+      price: Math.round(item.price),
+      quantity: 1,
+    }));
+
+    // If voucher applied, add a discount line item with negative price
+    const discount = Math.round(voucher_discount || 0);
+    if (discount > 0 && voucher_code) {
+      itemDetails.push({
+        id: 'VOUCHER',
+        name: `Diskon Voucher ${voucher_code}`,
+        price: -discount,
+        quantity: 1,
+      });
+    }
+
+    // Recalculate gross_amount from item_details to guarantee they match
+    const grossAmount = itemDetails.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
     // Create Midtrans transaction parameter
     const parameter = {
       transaction_details: {
         order_id: orderCode,
-        gross_amount: Math.round(total),
+        gross_amount: Math.round(grossAmount),
       },
-      item_details: items.map(item => ({
-        id: item.id,
-        name: item.title.substring(0, 50),
-        price: Math.round(item.price),
-        quantity: 1,
-      })),
+      item_details: itemDetails,
       customer_details: {
         email: user_email,
       },

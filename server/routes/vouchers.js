@@ -16,6 +16,24 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/vouchers/available — Get active vouchers for users (public, hides sensitive fields)
+router.get('/available', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('vouchers')
+      .select('code, description, discount_type, discount_value, min_purchase, max_uses, used_count, expired_at')
+      .eq('is_active', true)
+      .or(`expired_at.is.null,expired_at.gt.${new Date().toISOString()}`)
+      .order('createddate', { ascending: false });
+    if (error) throw error;
+    // Filter out fully used vouchers
+    const available = (data || []).filter(v => v.max_uses === null || v.used_count < v.max_uses);
+    res.json(available);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/vouchers/validate/:code — Validate a voucher code (public, used at checkout)
 router.get('/validate/:code', async (req, res) => {
   try {
