@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
@@ -19,11 +20,35 @@ import PaymentStatus from './pages/PaymentStatus';
 import AdminPanel from './pages/AdminPanel';
 import Support from './pages/Support';
 import ScrollToTop from './components/ScrollToTop';
+import { useCart } from './context/CartContext';
 import './App.css';
+
+const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
 function App() {
   const location = useLocation();
+  const { clearCart } = useCart();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+
+  useEffect(() => {
+    const checkPendingOrder = async () => {
+      const pendingOrder = localStorage.getItem('pending_order');
+      if (pendingOrder) {
+        try {
+          await fetch(`${API_URL}/payment/confirm-success`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_code: pendingOrder }),
+          });
+          localStorage.removeItem('pending_order');
+          clearCart();
+        } catch (err) {
+          console.error('Error confirming pending order globally:', err);
+        }
+      }
+    };
+    checkPendingOrder();
+  }, [location.pathname, clearCart]);
 
   return (
     <div className={`app ${!isAuthPage ? 'app-fancy-bg' : ''}`}>
