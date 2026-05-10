@@ -7,7 +7,7 @@ import {
   HiOutlineClipboardList, HiOutlineHome, HiOutlineRefresh,
   HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineStar,
   HiOutlineSearch, HiOutlineFilter, HiOutlineDownload, HiOutlineDocumentText,
-  HiOutlineChartBar,
+  HiOutlineChartBar, HiOutlineExclamationCircle,
 } from 'react-icons/hi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
@@ -939,7 +939,7 @@ export default function AdminPanel() {
         <div className="modal-overlay" onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}>
           <div className="modal-content confirm-modal animate-scaleIn" onClick={(e) => e.stopPropagation()}>
             <div className="confirm-icon">
-              <HiOutlineTrash />
+              <HiOutlineExclamationCircle />
             </div>
             <h3>{confirmModal.title}</h3>
             <p className="confirm-desc">{confirmModal.message}</p>
