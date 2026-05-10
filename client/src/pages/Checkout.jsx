@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { HiOutlineLockClosed, HiOutlineCreditCard } from 'react-icons/hi';
+import { HiOutlineLockClosed, HiOutlineCreditCard, HiOutlineTicket, HiOutlineX, HiOutlineCheckCircle } from 'react-icons/hi';
 import { motion } from 'framer-motion';
 import { staggerContainer, staggerItem } from '../lib/motionUtils';
 import toast from 'react-hot-toast';
@@ -16,6 +16,12 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  // ── Voucher state ────────────────────────────────
+  const [voucherCode, setVoucherCode] = useState('');
+  const [voucherData, setVoucherData] = useState(null);
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [voucherError, setVoucherError] = useState('');
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -26,6 +32,44 @@ export default function Checkout() {
 
   const getDiscountedPrice = (item) => {
     return Math.round(item.price - (item.price * (item.discount || 0) / 100));
+  };
+
+  // ── Voucher helpers ───────────────────────────────
+  const subtotal = getTotal();
+  const voucherDiscount = (() => {
+    if (!voucherData) return 0;
+    if (voucherData.discount_type === 'percent') {
+      return Math.round(subtotal * voucherData.discount_value / 100);
+    }
+    return Math.min(voucherData.discount_value, subtotal);
+  })();
+  const finalTotal = Math.max(0, subtotal - voucherDiscount);
+
+  const applyVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setVoucherLoading(true);
+    setVoucherError('');
+    try {
+      const res = await fetch(`${API_URL}/vouchers/validate/${voucherCode.trim()}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      if (data.min_purchase > 0 && subtotal < data.min_purchase) {
+        throw new Error(`Minimum pembelian ${formatPrice(data.min_purchase)} untuk voucher ini`);
+      }
+      setVoucherData(data);
+      toast.success(`Voucher berhasil diterapkan! Hemat ${data.discount_type === 'percent' ? data.discount_value + '%' : formatPrice(data.discount_value)}`);
+    } catch (err) {
+      setVoucherError(err.message);
+      setVoucherData(null);
+    } finally {
+      setVoucherLoading(false);
+    }
+  };
+
+  const removeVoucher = () => {
+    setVoucherData(null);
+    setVoucherCode('');
+    setVoucherError('');
   };
 
   const handlePayment = async () => {
@@ -47,7 +91,9 @@ export default function Checkout() {
             title: item.title,
             price: getDiscountedPrice(item),
           })),
-          total: getTotal(),
+          total: finalTotal,
+          voucher_code: voucherData?.code || null,
+          voucher_discount: voucherDiscount || 0,
         }),
       });
 
@@ -172,19 +218,68 @@ export default function Checkout() {
                 <span className="checkout-value">{user?.email}</span>
               </div>
 
+              {/* Voucher Input */}
+              <div className="checkout-voucher">
+                <label className="checkout-label" style={{ marginBottom: 8, display: 'block' }}>
+                  <HiOutlineTicket style={{ marginRight: 6, verticalAlign: 'middle' }} />
+                  Kode Voucher
+                </label>
+                {voucherData ? (
+                  <div className="voucher-applied">
+                    <HiOutlineCheckCircle className="voucher-check-icon" />
+                    <div className="voucher-applied-info">
+                      <span className="voucher-applied-code">{voucherData.code}</span>
+                      <span className="voucher-applied-desc">
+                        Hemat {voucherData.discount_type === 'percent'
+                          ? `${voucherData.discount_value}%`
+                          : formatPrice(voucherData.discount_value)}
+                      </span>
+                    </div>
+                    <button className="voucher-remove" onClick={removeVoucher} title="Hapus voucher">
+                      <HiOutlineX />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="voucher-input-row">
+                    <input
+                      className="voucher-input"
+                      type="text"
+                      placeholder="Masukkan kode voucher"
+                      value={voucherCode}
+                      onChange={e => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError(''); }}
+                      onKeyDown={e => e.key === 'Enter' && applyVoucher()}
+                    />
+                    <button
+                      className="voucher-apply-btn"
+                      onClick={applyVoucher}
+                      disabled={voucherLoading || !voucherCode.trim()}
+                    >
+                      {voucherLoading ? '...' : 'Terapkan'}
+                    </button>
+                  </div>
+                )}
+                {voucherError && <p className="voucher-error">{voucherError}</p>}
+              </div>
+
               <div className="checkout-summary">
                 <div className="checkout-row">
                   <span>Subtotal ({cartItems.length} item)</span>
-                  <span>{formatPrice(getTotal())}</span>
+                  <span>{formatPrice(subtotal)}</span>
                 </div>
                 <div className="checkout-row">
                   <span>Biaya layanan</span>
                   <span className="text-green">Gratis</span>
                 </div>
+                {voucherData && (
+                  <div className="checkout-row voucher-discount-row">
+                    <span>Diskon Voucher ({voucherData.code})</span>
+                    <span className="text-green">- {formatPrice(voucherDiscount)}</span>
+                  </div>
+                )}
                 <div className="checkout-divider" />
                 <div className="checkout-row checkout-total">
                   <span>Total Pembayaran</span>
-                  <span>{formatPrice(getTotal())}</span>
+                  <span>{formatPrice(finalTotal)}</span>
                 </div>
               </div>
 
@@ -196,7 +291,7 @@ export default function Checkout() {
                 {loading ? (
                   <div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />
                 ) : (
-                  <><HiOutlineLockClosed /> Bayar {formatPrice(getTotal())}</>
+                  <><HiOutlineLockClosed /> Bayar {formatPrice(finalTotal)}</>
                 )}
               </button>
 
