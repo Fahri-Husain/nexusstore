@@ -28,7 +28,7 @@ export default function OrderHistory() {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { removeFromCart } = useCart();
+  const { removeFromCart, clearCart } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => { if (user) fetchOrders(); }, [user]);
@@ -45,6 +45,7 @@ export default function OrderHistory() {
             body: JSON.stringify({ order_code: pendingOrder }),
           });
           localStorage.removeItem('pending_order');
+          clearCart(); // Kosongkan keranjang karena pesanan berhasil
         } catch (err) {
           console.error('Error confirming pending order:', err);
         }

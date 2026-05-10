@@ -5,10 +5,12 @@ import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { HiOutlineDownload, HiOutlineCollection } from 'react-icons/hi';
 import { staggerContainer, staggerItem } from '../lib/motionUtils';
+import { useCart } from '../context/CartContext';
 import './Library.css';
 
 export default function Library() {
   const { user } = useAuth();
+  const { clearCart } = useCart();
   const [library, setLibrary] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +29,7 @@ export default function Library() {
             body: JSON.stringify({ order_code: pendingOrder }),
           });
           localStorage.removeItem('pending_order');
+          clearCart(); // Kosongkan keranjang karena sudah dibayar
         } catch (err) {
           console.error('Error confirming pending order:', err);
         }
