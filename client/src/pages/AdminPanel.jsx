@@ -697,18 +697,9 @@ export default function AdminPanel() {
                           </td>
                           <td><strong>{formatPrice(order.total_amount)}</strong></td>
                           <td>
-                            <select 
-                              className={`badge badge-${(STATUS_MAP[order.status] || {}).type || 'danger'}`}
-                              value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                              style={{ border: 'none', appearance: 'auto', cursor: 'pointer', outline: 'none' }}
-                            >
-                              <option value="1">Menunggu</option>
-                              <option value="2">Berhasil</option>
-                              <option value="3">Kadaluarsa</option>
-                              <option value="4">Dibatalkan</option>
-                              <option value="5">Gagal</option>
-                            </select>
+                            <span className={`badge badge-${(STATUS_MAP[order.status] || {}).type || 'danger'}`}>
+                              {(STATUS_MAP[order.status] || {}).label || 'Unknown'}
+                            </span>
                           </td>
                           <td>{order.payment_method || '-'}</td>
                         </tr>
