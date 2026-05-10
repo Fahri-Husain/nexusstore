@@ -238,24 +238,27 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: nowrap;
 }
 
 .voucher-section-title {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
+  gap: 5px;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #D4A853;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .voucher-show-available {
   background: none;
   border: none;
   color: #D4A853;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
   opacity: 0.8;
@@ -263,6 +266,9 @@
   padding: 0;
   text-decoration: underline;
   text-underline-offset: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .voucher-show-available:hover {
@@ -359,19 +365,22 @@
 .voucher-input-row {
   display: flex;
   gap: 8px;
+  min-width: 0;
 }
 
 .voucher-input {
   flex: 1;
+  min-width: 0;
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--radius-md);
-  padding: 10px 14px;
+  padding: 9px 12px;
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-family: 'Courier New', monospace;
   letter-spacing: 0.06em;
   transition: border-color 0.2s;
+  width: 100%;
 }
 
 .voucher-input:focus {
@@ -387,16 +396,17 @@
 }
 
 .voucher-apply-btn {
-  padding: 10px 18px;
+  padding: 9px 14px;
   background: linear-gradient(135deg, rgba(212,168,83,0.2), rgba(212,168,83,0.1));
   border: 1px solid rgba(212,168,83,0.4);
   border-radius: var(--radius-md);
   color: #D4A853;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .voucher-apply-btn:hover:not(:disabled) {
