@@ -519,12 +519,12 @@ export default function AdminPanel() {
                   <table className="admin-table">
                     <thead>
                       <tr>
+                        <th>Aksi</th>
                         <th>Game</th>
                         <th>Harga</th>
                         <th>Diskon</th>
                         <th>Rating</th>
                         <th>Kategori</th>
-                        <th>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -534,6 +534,16 @@ export default function AdminPanel() {
                         <tr><td colSpan="6" className="admin-table-empty">Belum ada game</td></tr>
                       ) : games.map(game => (
                         <tr key={game.game_id}>
+                          <td>
+                            <div className="admin-actions">
+                              <button className="btn btn-outline btn-sm" onClick={() => openEditModal(game)} title="Edit">
+                                <HiOutlinePencil />
+                              </button>
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(game.game_id, game.title)} title="Hapus">
+                                <HiOutlineTrash />
+                              </button>
+                            </div>
+                          </td>
                           <td>
                             <div className="admin-game-cell">
                               <img src={game.image_url} alt="" className="admin-game-thumb"
@@ -548,16 +558,6 @@ export default function AdminPanel() {
                           <td>{game.discount > 0 ? <span className="badge badge-warning">{game.discount}%</span> : <span className="text-muted">-</span>}</td>
                           <td>⭐ {Number(game.rating).toFixed(1)}</td>
                           <td>{game.category ? <span className="admin-category-tag">{game.category}</span> : '-'}</td>
-                          <td>
-                            <div className="admin-actions">
-                              <button className="btn btn-outline btn-sm" onClick={() => openEditModal(game)} title="Edit">
-                                <HiOutlinePencil />
-                              </button>
-                              <button className="btn btn-danger btn-sm" onClick={() => handleDelete(game.game_id, game.title)} title="Hapus">
-                                <HiOutlineTrash />
-                              </button>
-                            </div>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -662,13 +662,13 @@ export default function AdminPanel() {
                   <table className="admin-table">
                     <thead>
                       <tr>
+                        <th>Aksi</th>
                         <th>Order Code</th>
                         <th>Tanggal</th>
                         <th>Items</th>
                         <th>Total</th>
                         <th>Status</th>
                         <th>Metode</th>
-                        <th>Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -680,6 +680,11 @@ export default function AdminPanel() {
                         </td></tr>
                       ) : filteredOrders.map(order => (
                         <tr key={order.id}>
+                          <td>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteOrder(order.id, order.order_code)} title="Hapus Order">
+                              <HiOutlineTrash />
+                            </button>
+                          </td>
                           <td><code className="admin-code">{order.order_code}</code></td>
                           <td className="text-sm">{new Date(order.createddate).toLocaleDateString('id-ID')}</td>
                           <td>
@@ -706,11 +711,6 @@ export default function AdminPanel() {
                             </select>
                           </td>
                           <td>{order.payment_method || '-'}</td>
-                          <td>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDeleteOrder(order.id, order.order_code)} title="Hapus Order">
-                              <HiOutlineTrash />
-                            </button>
-                          </td>
                         </tr>
                       ))}
                     </tbody>
