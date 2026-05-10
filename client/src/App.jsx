@@ -29,6 +29,8 @@ function App() {
   const location = useLocation();
   const { clearCart } = useCart();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const isAdminPage = location.pathname.startsWith('/admin');
+  const hideNavAndFooter = isAuthPage || isAdminPage;
 
   useEffect(() => {
     const checkPendingOrder = async () => {
@@ -51,11 +53,11 @@ function App() {
   }, [location.pathname, clearCart]);
 
   return (
-    <div className={`app ${!isAuthPage ? 'app-fancy-bg' : ''}`}>
+    <div className={`app ${!hideNavAndFooter ? 'app-fancy-bg' : ''} ${isAdminPage ? 'admin-layout' : ''}`}>
       <ScrollToTop />
-      {!isAuthPage && <Navbar />}
+      {!hideNavAndFooter && <Navbar />}
       
-      <main className={isAuthPage ? "" : "main-content"}>
+      <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><Home /></PageTransition>} />
@@ -86,7 +88,7 @@ function App() {
         </AnimatePresence>
       </main>
 
-      {!isAuthPage && <Footer />}
+      {!hideNavAndFooter && <Footer />}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   HiOutlineSearch, HiOutlineFilter, HiOutlineDownload, HiOutlineDocumentText,
   HiOutlineChartBar,
 } from 'react-icons/hi';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
 import './AdminPanel.css';
 
@@ -320,7 +321,10 @@ export default function AdminPanel() {
     return acc;
   }, {});
   const monthKeys = Object.keys(revenueByMonth).slice(-6); // last 6 months
-  const maxRevenue = Math.max(...monthKeys.map(k => revenueByMonth[k]), 1);
+  const chartData = monthKeys.map(month => ({
+    name: month,
+    Pendapatan: revenueByMonth[month],
+  }));
 
   // Top selling games from order_items
   const gameSalesMap = {};
@@ -758,24 +762,42 @@ export default function AdminPanel() {
                 <div className="admin-card-header">
                   <h3>Pendapatan per Bulan <span className="admin-badge-count">{monthKeys.length} bulan</span></h3>
                 </div>
-                <div className="admin-chart-area">
+                <div className="admin-chart-area" style={{ height: 320, padding: '24px 16px' }}>
                   {monthKeys.length === 0 ? (
                     <div className="admin-table-empty">Belum ada data pendapatan</div>
                   ) : (
-                    <div className="admin-bar-chart">
-                      {monthKeys.map(month => (
-                        <div key={month} className="admin-bar-item">
-                          <div className="admin-bar-value">{formatPrice(revenueByMonth[month])}</div>
-                          <div className="admin-bar-wrap">
-                            <div
-                              className="admin-bar-fill"
-                              style={{ height: `${Math.max(8, (revenueByMonth[month] / maxRevenue) * 100)}%` }}
-                            />
-                          </div>
-                          <div className="admin-bar-label">{month}</div>
-                        </div>
-                      ))}
-                    </div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={chartData} margin={{ top: 10, right: 10, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                        <XAxis 
+                          dataKey="name" 
+                          stroke="rgba(255,255,255,0.3)" 
+                          tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 12}} 
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <YAxis 
+                          stroke="rgba(255,255,255,0.3)" 
+                          tick={{fill: 'rgba(255,255,255,0.6)', fontSize: 12}} 
+                          tickFormatter={(value) => `Rp ${(value/1000).toLocaleString('id-ID')}k`} 
+                          tickLine={false}
+                          axisLine={false}
+                        />
+                        <Tooltip 
+                          cursor={{fill: 'rgba(255,255,255,0.03)'}}
+                          contentStyle={{ backgroundColor: '#14151C', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}
+                          itemStyle={{ color: '#F0F0F5', fontWeight: 'bold' }}
+                          formatter={(value) => [formatPrice(value), 'Pendapatan']}
+                        />
+                        <Bar dataKey="Pendapatan" fill="url(#colorRevenue)" radius={[6, 6, 0, 0]} maxBarSize={60} />
+                        <defs>
+                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#D4A853" stopOpacity={1}/>
+                            <stop offset="100%" stopColor="#D4A853" stopOpacity={0.6}/>
+                          </linearGradient>
+                        </defs>
+                      </BarChart>
+                    </ResponsiveContainer>
                   )}
                 </div>
               </div>
