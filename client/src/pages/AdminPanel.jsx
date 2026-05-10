@@ -29,6 +29,7 @@ export default function AdminPanel() {
   const [showModal, setShowModal] = useState(false);
   const [editingGame, setEditingGame] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
 
   // ── Order Filters ────────────────────────────────
   const [orderSearch, setOrderSearch] = useState('');
@@ -161,21 +162,27 @@ export default function AdminPanel() {
     }
   };
 
-  const handleDelete = async (gameId, title) => {
-    if (!confirm(`Yakin hapus game "${title}"?`)) return;
-    try {
-      const response = await fetch(`${API_URL}/games/admin/${gameId}`, {
-        method: 'DELETE'
-      });
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || 'Gagal menghapus game');
+  const handleDelete = (gameId, title) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Hapus Game',
+      message: `Yakin ingin menghapus game "${title}"? Tindakan ini tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        try {
+          const response = await fetch(`${API_URL}/games/admin/${gameId}`, {
+            method: 'DELETE'
+          });
+          if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.error || 'Gagal menghapus game');
+          }
+          toast.success('Game berhasil dihapus');
+          fetchData();
+        } catch (error) {
+          toast.error(error.message);
+        }
       }
-      toast.success('Game berhasil dihapus');
-      fetchData();
-    } catch (error) {
-      toast.error(error.message);
-    }
+    });
   };
 
   const updateOrderStatus = async (orderId, newStatus) => {
@@ -189,16 +196,22 @@ export default function AdminPanel() {
     }
   };
 
-  const handleDeleteOrder = async (orderId, orderCode) => {
-    if (!confirm(`Yakin hapus order ${orderCode}?`)) return;
-    try {
-      const { error } = await supabase.from('orders').update({ isdeleted: 1, lastupdateddate: new Date().toISOString() }).eq('id', orderId);
-      if (error) throw error;
-      toast.success('Order berhasil dihapus');
-      fetchData();
-    } catch (error) {
-      toast.error(error.message);
-    }
+  const handleDeleteOrder = (orderId, orderCode) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Hapus Pesanan',
+      message: `Yakin ingin menghapus pesanan dengan kode ${orderCode}? Tindakan ini tidak dapat dibatalkan.`,
+      onConfirm: async () => {
+        try {
+          const { error } = await supabase.from('orders').update({ isdeleted: 1, lastupdateddate: new Date().toISOString() }).eq('id', orderId);
+          if (error) throw error;
+          toast.success('Order berhasil dihapus');
+          fetchData();
+        } catch (error) {
+          toast.error(error.message);
+        }
+      }
+    });
   };
 
   const formatPrice = (price) =>
@@ -840,6 +853,30 @@ export default function AdminPanel() {
 
         </div>
       </div>
+
+      {/* ─── CONFIRM MODAL ─── */}
+      {confirmModal.isOpen && (
+        <div className="modal-overlay" onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}>
+          <div className="modal-content confirm-modal animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="confirm-icon">
+              <HiOutlineTrash />
+            </div>
+            <h3>{confirmModal.title}</h3>
+            <p className="confirm-desc">{confirmModal.message}</p>
+            <div className="confirm-actions">
+              <button type="button" className="btn-confirm-cancel" onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}>
+                Batal
+              </button>
+              <button type="button" className="btn-confirm-danger" onClick={() => {
+                confirmModal.onConfirm();
+                setConfirmModal({ ...confirmModal, isOpen: false });
+              }}>
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── MODAL ─── */}
       {showModal && (
