@@ -205,6 +205,42 @@
 }
 
 @media (max-width: 640px) {
-  .order-card-header { flex-direction: column; align-items: flex-start; }
-  .order-card-footer { flex-direction: column; gap: var(--spacing-sm); align-items: flex-start; }
+  .orders-page-title {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-md);
+  }
+  .order-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--spacing-md);
+  }
+  .order-code {
+    font-size: 0.85rem;
+    word-break: break-all;
+  }
+  .order-items {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+  .order-item-title {
+    font-size: 0.85rem;
+  }
+  .order-item-price {
+    font-size: 0.85rem;
+  }
+  .order-card-footer {
+    flex-direction: column;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+    padding: var(--spacing-md);
+  }
+  .order-card-footer > div:first-child {
+    width: 100%;
+  }
+  .order-card-footer > div:first-child > div[style*="flex-wrap: wrap"] {
+    flex-direction: column;
+  }
+  .order-card-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
