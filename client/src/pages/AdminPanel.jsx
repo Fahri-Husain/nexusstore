@@ -352,6 +352,77 @@ export default function AdminPanel() {
   });
   const topGames = Object.values(gameSalesMap).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
+  const exportLaporanCSV = () => {
+    const headers = ['Rank', 'Game', 'Qty Terjual', 'Total Pendapatan'];
+    const rows = topGames.map((g, i) => [
+      i + 1,
+      g.title || '',
+      g.qty + ' unit',
+      g.revenue
+    ]);
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `laporan-penjualan-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success('Laporan diekspor ke Excel/CSV');
+  };
+
+  const exportLaporanPDF = () => {
+    const printRows = topGames.map((g, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${g.title || ''}</td>
+        <td>${g.qty} unit</td>
+        <td>${formatPrice(g.revenue)}</td>
+      </tr>`).join('');
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+      <title>Laporan Penjualan — Nexus Store</title>
+      <style>
+        body { font-family: sans-serif; font-size: 12px; color: #111; }
+        h2 { margin-bottom: 8px; }
+        p { color: #666; margin-bottom: 16px; font-size: 11px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 7px 10px; text-align: left; }
+        th { background: #f5f5f5; font-weight: 600; }
+        tr:nth-child(even) td { background: #fafafa; }
+        .summary { display: flex; gap: 20px; margin-bottom: 20px; }
+        .summary-box { border: 1px solid #ddd; padding: 15px; border-radius: 4px; flex: 1; }
+      </style></head><body>
+      <h2>Laporan Penjualan — Nexus Store</h2>
+      <p>Dicetak: ${new Date().toLocaleString('id-ID')}</p>
+      
+      <div class="summary">
+        <div class="summary-box">
+          <strong>Total Pendapatan:</strong><br/>
+          <span style="font-size: 16px; color: #D4A853;">${formatPrice(totalRevenue)}</span>
+        </div>
+        <div class="summary-box">
+          <strong>Order Berhasil:</strong><br/>
+          <span style="font-size: 16px;">${successOrders}</span>
+        </div>
+        <div class="summary-box">
+          <strong>Total Item Terjual:</strong><br/>
+          <span style="font-size: 16px;">${totalItems}</span>
+        </div>
+      </div>
+
+      <h3>Game Terlaris (Top ${topGames.length})</h3>
+      <table><thead><tr>
+        <th>Rank</th><th>Game</th><th>Qty Terjual</th><th>Total Pendapatan</th>
+      </tr></thead><tbody>${printRows}</tbody></table>
+      </body></html>`;
+    const w = window.open('', '_blank');
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    setTimeout(() => { w.print(); w.close(); }, 500);
+  };
 
   return (
     <div className="admin-shell">
@@ -727,6 +798,15 @@ export default function AdminPanel() {
           {/* ─── LAPORAN PENJUALAN ─── */}
           {activeTab === 'laporan' && (
             <div className="animate-fadeIn">
+              <div className="admin-filter-exports-row" style={{ marginBottom: 'var(--spacing-md)' }}>
+                <button className="btn btn-outline btn-sm" onClick={exportLaporanCSV} title="Export ke Excel/CSV">
+                  <HiOutlineDownload /> Excel
+                </button>
+                <button className="btn btn-outline btn-sm" onClick={exportLaporanPDF} title="Export ke PDF">
+                  <HiOutlineDocumentText /> PDF
+                </button>
+              </div>
+
               {/* Summary stats */}
               <div className="admin-stat-grid" style={{ marginBottom: 'var(--spacing-xl)' }}>
                 <div className="admin-stat-card">
