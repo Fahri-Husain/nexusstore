@@ -88,6 +88,7 @@ router.post('/create-transaction', async (req, res) => {
       customer_details: {
         email: user_email,
       },
+      ...(voucher_code ? { custom_field1: voucher_code } : {}),
       credit_card: {
         secure: true,
       },
@@ -188,6 +189,12 @@ router.post('/confirm-success', async (req, res) => {
       return res.status(400).json({ error: 'Transaksi belum berhasil menurut Midtrans' });
     }
 
+    // Check current order status
+    const { data: currentOrder } = await supabase.from('orders').select('status').eq('order_code', order_code).single();
+    if (!currentOrder || currentOrder.status === 2) {
+      return res.json({ status: 'ok', message: 'Order sudah diproses sebelumnya' });
+    }
+
     // Update order status to paid (2)
     const { error: updateError } = await supabase
       .from('orders')
@@ -202,6 +209,16 @@ router.post('/confirm-success', async (req, res) => {
 
     // Add games to library
     await addGamesToLibrary(order_code);
+
+    // Update voucher usage if voucher was used
+    if (midtransStatus && midtransStatus.custom_field1) {
+      const vCode = midtransStatus.custom_field1;
+      const { data: v } = await supabase.from('vouchers').select('used_count').eq('code', vCode).single();
+      if (v) {
+        await supabase.from('vouchers').update({ used_count: (v.used_count || 0) + 1 }).eq('code', vCode);
+        console.log(`🎟️ Voucher ${vCode} used_count incremented.`);
+      }
+    }
 
     console.log(`✅ Order ${order_code} confirmed as PAID, games added to library`);
     res.json({ status: 'ok', message: 'Pembayaran dikonfirmasi dan game ditambahkan ke perpustakaan' });
@@ -244,6 +261,12 @@ router.post('/notification', async (req, res) => {
       orderStatus = 5; // failed
     }
 
+    // Check current order status
+    const { data: currentOrder } = await supabase.from('orders').select('status').eq('order_code', orderId).single();
+    if (!currentOrder || currentOrder.status === orderStatus) {
+       return res.status(200).json({ status: 'ok' });
+    }
+
     // Update order status in database
     const { error: updateError } = await supabase
       .from('orders')
@@ -259,6 +282,16 @@ router.post('/notification', async (req, res) => {
     // If payment successful, add games to user's library
     if (orderStatus === 2) {
       await addGamesToLibrary(orderId);
+
+      // Increment voucher used_count
+      if (statusResponse.custom_field1) {
+        const vCode = statusResponse.custom_field1;
+        const { data: v } = await supabase.from('vouchers').select('used_count').eq('code', vCode).single();
+        if (v) {
+          await supabase.from('vouchers').update({ used_count: (v.used_count || 0) + 1 }).eq('code', vCode);
+          console.log(`🎟️ Voucher ${vCode} used_count incremented.`);
+        }
+      }
     }
 
     console.log(`✅ Order ${orderId} updated to status: ${orderStatus}`);
