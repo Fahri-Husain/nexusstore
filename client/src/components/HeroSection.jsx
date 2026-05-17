@@ -102,9 +102,10 @@ export default function HeroSection() {
             >
               <div className="hero-main-overlay">
                 <motion.div 
-                  initial={{ x: -20, opacity: 0 }}
+                  initial={{ x: 50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
+                  exit={{ x: -50, opacity: 0 }}
+                  transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
                   className="hero-main-info"
                 >
                   <div className="hero-badge-epic">BARU RILIS</div>
