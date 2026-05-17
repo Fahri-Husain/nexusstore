@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedLink, AnimatedButton } from '../lib/motionUtils';
 import './Navbar.css';
 
-export default function Navbar() {
+export default function Navbar({ hasBroadcast = false }) {
   const { user, profile, isAdmin, signOut } = useAuth();
   const { cartCount } = useCart();
   const navigate = useNavigate();
@@ -55,6 +55,7 @@ export default function Navbar() {
     <>
       <motion.nav
         className={`navbar ${scrolled ? 'scrolled' : ''}`}
+        style={{ top: hasBroadcast ? '38px' : '0', transition: 'top 0.3s ease' }}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}

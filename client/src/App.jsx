@@ -71,7 +71,7 @@ function App() {
     <div className={`app ${!hideNavAndFooter ? 'app-fancy-bg' : ''} ${isAdminPage ? 'admin-layout' : ''}`}>
       <ScrollToTop />
       {broadcast && !isAdminPage && (
-        <div style={{ 
+        <div className="global-broadcast-banner" style={{ 
           background: broadcast.type === 'error' ? 'var(--danger-color)' : broadcast.type === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)', 
           color: broadcast.type === 'warning' ? '#000' : '#fff',
           padding: '8px 16px', 
@@ -82,14 +82,18 @@ function App() {
           justifyContent: 'center',
           alignItems: 'center',
           gap: '8px',
-          zIndex: 1000,
-          position: 'relative'
+          zIndex: 1100,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
         }}>
           {broadcast.type === 'error' || broadcast.type === 'warning' ? <HiOutlineExclamationCircle size={18} /> : <HiOutlineInformationCircle size={18} />}
           {broadcast.message}
         </div>
       )}
-      {!hideNavAndFooter && <Navbar />}
+      {!hideNavAndFooter && <Navbar hasBroadcast={!!(broadcast && !isAdminPage)} />}
       
       <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"}>
         <AnimatePresence mode="wait">
