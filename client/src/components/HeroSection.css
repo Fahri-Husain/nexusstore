@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 120px 0 var(--spacing-2xl); /* Reduced top padding to pull content up */
+  padding: 160px 0 var(--spacing-2xl); /* Increased top padding to pull content down */
 }
 
 /* Very subtle deep ambient glow to avoid flat black */

@@ -72,7 +72,7 @@ function App() {
       <ScrollToTop />
       {broadcast && !isAdminPage && (
         <div className="global-broadcast-banner" style={{ 
-          background: broadcast.type === 'error' ? 'var(--danger-color)' : broadcast.type === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)', 
+          background: broadcast.type === 'error' ? 'var(--accent-red)' : broadcast.type === 'warning' ? 'var(--accent-yellow)' : '#3A86FF', 
           color: broadcast.type === 'warning' ? '#000' : '#fff',
           padding: '8px 16px', 
           textAlign: 'center', 
