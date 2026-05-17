@@ -1,169 +1,169 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedLink } from '../lib/motionUtils';
 import { supabase } from '../lib/supabase';
 import './HeroSection.css';
 
 export default function HeroSection() {
-  const [banners, setBanners] = useState([]);
+  const [games, setGames] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const timerRef = useRef(null);
+
+  const SLIDE_DURATION = 7000;
 
   useEffect(() => {
-    const fetchBanners = async () => {
+    const fetchGames = async () => {
       try {
         const { data, error } = await supabase
-          .from('banners')
+          .from('games')
           .select('*')
-          .eq('is_active', true)
-          .order('createddate', { ascending: false });
-        if (data && data.length > 0) setBanners(data);
+          .eq('isdeleted', 0)
+          .order('createddate', { ascending: false })
+          .limit(5); // Mengambil 5 game terbaru
+        
+        if (data && data.length > 0) {
+          setGames(data);
+        }
       } catch (err) {
-        console.error('Failed to fetch banners:', err);
+        console.error('Failed to fetch games for hero:', err);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchBanners();
+    fetchGames();
   }, []);
 
+  const startTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (games.length <= 1) return;
+    timerRef.current = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % games.length);
+    }, SLIDE_DURATION);
+  };
+
   useEffect(() => {
-    if (banners.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % banners.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [banners.length]);
+    startTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [games.length, currentIndex]);
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.2
-      }
-    },
-    exit: {
-      opacity: 0,
-      transition: { duration: 0.4 }
-    }
+  const handleThumbnailClick = (index) => {
+    setCurrentIndex(index);
+    // Timer otomatis terrestart karena useEffect dependency
   };
-
-  const item = {
-    hidden: { opacity: 0, y: 40, filter: 'blur(10px)' },
-    show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { type: "spring", stiffness: 300, damping: 24 } },
-    exit: { opacity: 0, y: -20, transition: { duration: 0.3 } }
-  };
-
-  const activeBanner = banners[currentIndex];
 
   if (isLoading) {
     return (
-      <section className="hero-minimalist" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-        <div className="hero-ambient" style={{ zIndex: 1, opacity: 0.5 }} />
-        <div className="container hero-content" style={{ zIndex: 2, position: 'relative' }}>
-          <div className="hero-text-wrapper" style={{ opacity: 0.7 }}>
-            <div style={{ width: '120px', height: '24px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', marginBottom: '16px' }} />
-            <div style={{ width: '80%', maxWidth: '500px', height: '64px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '16px' }} />
-            <div style={{ width: '60%', maxWidth: '400px', height: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '32px' }} />
-            <div style={{ width: '180px', height: '50px', background: 'rgba(255,255,255,0.1)', borderRadius: '25px' }} />
+      <section className="hero-epic-container">
+        <div className="hero-epic-content">
+          <div className="hero-epic-main">
+            <div className="skeleton-box" style={{ width: '100%', height: '100%', borderRadius: '16px' }} />
+          </div>
+          <div className="hero-epic-sidebar">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="hero-epic-thumbnail skeleton-box" style={{ height: '100px', borderRadius: '12px' }} />
+            ))}
           </div>
         </div>
       </section>
     );
   }
 
+  // Fallback jika tidak ada data sama sekali
+  if (games.length === 0) {
+    return (
+      <section className="hero-epic-container" style={{ minHeight: '400px' }}>
+         <div className="container" style={{ textAlign: 'center', opacity: 0.5 }}>
+            <h2>Belum ada game tersedia.</h2>
+         </div>
+      </section>
+    );
+  }
+
+  const activeGame = games[currentIndex];
+
   return (
-    <section className="hero-minimalist" style={{ position: 'relative' }}>
-      {/* Smooth Background Transition */}
-      <AnimatePresence>
-        {activeBanner && (
-          <motion.div
-            key={`bg-${currentIndex}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: 'easeInOut' }}
-            style={{
-              position: 'absolute',
-              top: 0, left: 0, right: 0, bottom: 0,
-              backgroundImage: `linear-gradient(to right, rgba(20, 21, 28, 0.98) 0%, rgba(20, 21, 28, 0.7) 40%, rgba(20, 21, 28, 0.1) 100%), url(${activeBanner.image_url})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center right',
-              zIndex: 0
-            }}
-          />
-        )}
-      </AnimatePresence>
+    <section className="hero-epic-container">
+      <div className="hero-epic-content">
+        
+        {/* === MAIN DISPLAY (KIRI) === */}
+        <div className="hero-epic-main">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={`main-${currentIndex}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5, ease: 'easeInOut' }}
+              className="hero-main-bg"
+              style={{ backgroundImage: `url(${activeGame.image_url})` }}
+            >
+              <div className="hero-main-overlay">
+                <motion.div 
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  className="hero-main-info"
+                >
+                  <div className="hero-badge-epic">BARU RILIS</div>
+                  <h2 className="hero-main-title">{activeGame.title}</h2>
+                  <p className="hero-main-desc">{activeGame.description?.substring(0, 120)}...</p>
+                  
+                  <div className="hero-main-price-row">
+                     {activeGame.discount > 0 ? (
+                        <>
+                          <span className="hero-discount-badge">-{activeGame.discount}%</span>
+                          <div className="hero-price-stack">
+                            <span className="hero-price-original">Rp {activeGame.price.toLocaleString('id-ID')}</span>
+                            <span className="hero-price-final">Rp {(activeGame.price - (activeGame.price * activeGame.discount / 100)).toLocaleString('id-ID')}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <span className="hero-price-final">
+                          {activeGame.price === 0 ? 'GRATIS' : `Rp ${activeGame.price.toLocaleString('id-ID')}`}
+                        </span>
+                      )}
+                  </div>
 
-      {/* Subtle ambient light */}
-      {!activeBanner && <div className="hero-ambient" style={{ zIndex: 1 }} />}
-      
-      <div className="container hero-content" style={{ zIndex: 2, position: 'relative' }}>
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={`content-${currentIndex}`}
-            className="hero-text-wrapper"
-            variants={container}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-          >
-            <motion.div variants={item} className="hero-badge">
-              <span className="badge">KOLEKSI PILIHAN</span>
+                  <AnimatedLink to={`/game/${activeGame.game_id}`} className="btn btn-primary btn-epic">
+                    LIHAT GAME
+                  </AnimatedLink>
+                </motion.div>
+              </div>
             </motion.div>
-            
-            <motion.h1 variants={item} className="hero-title tracking-wide">
-              {activeBanner ? (
-                activeBanner.title.split('\n').map((line, i) => (
-                  <span key={i} className="hero-title-gradient" style={{ display: 'block' }}>{line}</span>
-                ))
-              ) : (
-                <>
-                  <span className="hero-title-gradient">ELEVATE</span> <br />
-                  <span className="hero-title-gradient">YOUR PLAY.</span>
-                </>
-              )}
-            </motion.h1>
-            
-            <motion.p variants={item} className="hero-subtitle" style={{ maxWidth: '600px', textShadow: activeBanner ? '0 2px 10px rgba(0,0,0,0.8)' : 'none' }}>
-              {activeBanner ? activeBanner.subtitle : (
-                <>
-                  Koleksi pilihan aset digital berkualitas tinggi.
-                  <br /> Rasakan generasi terbaru pengalaman interaktif yang tak terlupakan.
-                </>
-              )}
-            </motion.p>
-            
-            <motion.div variants={item} className="hero-cta-group">
-              <AnimatedLink to={activeBanner?.target_url || "/collection"} className="btn btn-primary btn-large" style={{ boxShadow: activeBanner ? '0 8px 30px rgba(212, 168, 83, 0.3)' : 'none' }}>
-                {activeBanner ? 'LIHAT PROMO' : 'JELAJAHI KOLEKSI'}
-              </AnimatedLink>
-            </motion.div>
-          </motion.div>
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
 
-        {/* Carousel indicators moved outside AnimatePresence so they stay fixed */}
-        {banners.length > 1 && (
-          <div style={{ display: 'flex', gap: '8px', marginTop: '48px', alignItems: 'center', justifyContent: 'center' }}>
-            {banners.map((_, i) => (
+        {/* === THUMBNAIL SIDEBAR (KANAN) === */}
+        <div className="hero-epic-sidebar">
+          {games.map((game, index) => {
+            const isActive = index === currentIndex;
+            return (
               <div 
-                key={i} 
-                onClick={() => setCurrentIndex(i)} 
-                style={{ 
-                  width: i === currentIndex ? '32px' : '8px', 
-                  height: '6px', 
-                  borderRadius: '4px', 
-                  background: i === currentIndex ? '#D4A853' : 'rgba(255,255,255,0.2)', 
-                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', 
-                  cursor: 'pointer' 
-                }} 
-              />
-            ))}
-          </div>
-        )}
+                key={game.game_id} 
+                className={`hero-epic-thumbnail ${isActive ? 'active' : ''}`}
+                onClick={() => handleThumbnailClick(index)}
+              >
+                {/* Progress Animation Layer */}
+                {isActive && (
+                  <div 
+                    className="hero-epic-progress" 
+                    style={{ animationDuration: `${SLIDE_DURATION}ms` }} 
+                  />
+                )}
+                
+                {/* Content Layer */}
+                <div className="hero-epic-thumbnail-content">
+                  <img src={game.image_url} alt={game.title} className="hero-thumbnail-img" />
+                  <span className="hero-thumbnail-title">{game.title}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
       </div>
     </section>
   );
