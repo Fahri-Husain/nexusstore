@@ -55,7 +55,6 @@ export default function Navbar({ hasBroadcast = false }) {
     <>
       <motion.nav
         className={`navbar ${scrolled ? 'scrolled' : ''}`}
-        style={{ top: hasBroadcast ? '38px' : '0', transition: 'top 0.3s ease' }}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}

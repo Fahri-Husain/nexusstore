@@ -82,12 +82,12 @@ function App() {
           justifyContent: 'center',
           alignItems: 'center',
           gap: '8px',
-          zIndex: 1100,
-          position: 'fixed',
-          top: 0,
+          zIndex: 900,
+          position: 'absolute',
+          top: 'var(--navbar-height, 70px)',
           left: 0,
           width: '100%',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
         }}>
           {broadcast.type === 'error' || broadcast.type === 'warning' ? <HiOutlineExclamationCircle size={18} /> : <HiOutlineInformationCircle size={18} />}
           {broadcast.message}
@@ -95,7 +95,7 @@ function App() {
       )}
       {!hideNavAndFooter && <Navbar hasBroadcast={!!(broadcast && !isAdminPage)} />}
       
-      <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"}>
+      <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"} style={broadcast && !isAdminPage ? { paddingTop: '38px' } : {}}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><Home /></PageTransition>} />
