@@ -142,12 +142,13 @@ export default function GameDetail() {
 
           {/* RIGHT: Info Panel */}
           <div className="gd-right">
-            {/* Cover */}
-            <div className="gd-cover-box">
+            {/* Logo / Cover */}
+            <div className="gd-cover-box" style={game.logo_url ? { background: 'transparent', border: 'none', boxShadow: 'none' } : {}}>
               <img
-                src={game.image_url}
+                src={game.logo_url || game.image_url}
                 alt={game.title}
                 className="gd-cover-img"
+                style={game.logo_url ? { objectFit: 'contain', padding: '16px', maxHeight: '120px', width: 'auto', margin: '0 auto' } : {}}
                 onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = fallbackSvg(game.title); } }}
               />
             </div>
