@@ -70,7 +70,7 @@ function App() {
   return (
     <div className={`app ${!hideNavAndFooter ? 'app-fancy-bg' : ''} ${isAdminPage ? 'admin-layout' : ''}`}>
       <ScrollToTop />
-      {broadcast && !isAdminPage && (
+      {broadcast && !isAdminPage && !isAuthPage && (
         <div className="global-broadcast-banner" style={{ 
           background: broadcast.type === 'error' ? 'var(--accent-red)' : broadcast.type === 'warning' ? 'var(--accent-yellow)' : '#3A86FF', 
           color: broadcast.type === 'warning' ? '#000' : '#fff',
