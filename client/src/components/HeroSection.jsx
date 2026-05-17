@@ -57,6 +57,10 @@ export default function HeroSection() {
 
   const activeBanner = banners[currentIndex];
 
+  if (isLoading) {
+    return <section className="hero-minimalist" style={{ position: 'relative' }}></section>;
+  }
+
   return (
     <section className="hero-minimalist" style={{ position: 'relative' }}>
       {/* Smooth Background Transition */}
