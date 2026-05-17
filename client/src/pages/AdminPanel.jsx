@@ -1817,7 +1817,30 @@ export default function AdminPanel() {
                   </label>
                   
                   {formData.is_carousel && (
-                    <div style={{ marginTop: '12px' }}>
+                    <div>
+                      <div style={{ marginTop: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px dashed rgba(255,255,255,0.1)' }}>
+                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          Background Carousel <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>(Polos, tanpa teks judul)</span>
+                        </label>
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                          {formData.hero_image_url ? (
+                            <div style={{ background: '#0B0C10', padding: '4px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                              <img src={formData.hero_image_url} alt="Hero BG" style={{ maxWidth: '120px', maxHeight: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                            </div>
+                          ) : (
+                            <div style={{ width: 120, height: 60, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem' }}>
+                              BG Image
+                            </div>
+                          )}
+                          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <input type="file" accept="image/*" onChange={handleHeroImageUpload} disabled={uploadingImage} className="form-input" style={{ padding: '8px', cursor: uploadingImage ? 'not-allowed' : 'pointer' }} />
+                          </div>
+                        </div>
+                        <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Atau URL manual:</div>
+                        <input className="form-input" value={formData.hero_image_url || ''} placeholder="https://..." onChange={(e) => setFormData({ ...formData, hero_image_url: e.target.value })} style={{ marginTop: 4 }} />
+                      </div>
+
+                      <div style={{ marginTop: '12px' }}>
                       <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         Logo Game <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>(Opsional, untuk mengganti teks judul di Carousel)</span>
                       </label>
@@ -1845,6 +1868,7 @@ export default function AdminPanel() {
                       <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Atau URL manual:</div>
                       <input className="form-input" value={formData.logo_url || ''} placeholder="https://..."
                         onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })} style={{ marginTop: 4 }} />
+                    </div>
                     </div>
                   )}
                 </div>
