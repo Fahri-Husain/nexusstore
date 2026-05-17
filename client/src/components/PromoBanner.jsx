@@ -30,6 +30,14 @@ export default function PromoBanner() {
 
   if (!banner) return null;
 
+  const getEndDateText = (dateString) => {
+    if (!dateString) return "Promo waktu terbatas!";
+    const date = new Date(dateString);
+    date.setDate(date.getDate() + 14); // Promo berlangsung 14 hari dari tanggal dibuat
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return `Promo berakhir ${date.toLocaleDateString('id-ID', options)} pukul 22.00 WIB.`;
+  };
+
   return (
     <AnimatePresence>
       <motion.section 
@@ -46,6 +54,10 @@ export default function PromoBanner() {
             <AnimatedLink to={banner.target_url || "/collection"} className="btn btn-promo-mega">
               LIHAT PROMO
             </AnimatedLink>
+            
+            <p className="promo-mega-end-date">
+              {getEndDateText(banner.createddate)}
+            </p>
           </div>
         </div>
       </motion.section>
