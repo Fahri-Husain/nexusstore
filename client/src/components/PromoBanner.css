@@ -8,8 +8,6 @@
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid rgba(255,255,255,0.05);
-  margin-top: -64px; /* Untuk menarik banner ke atas navbar jika navbar transparan, atau sesuaikan jika perlu */
-  padding-top: 64px; /* Kompensasi tinggi navbar */
 }
 
 /* Jika Anda tidak ingin banner menembus navbar, hapus margin-top dan padding-top di atas, 
