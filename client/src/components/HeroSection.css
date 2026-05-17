@@ -9,6 +9,19 @@
   padding: 40px 0 var(--spacing-2xl); /* Adjusted since main has padding-top now */
 }
 
+/* Gradient fade to main content */
+.hero-minimalist::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 250px;
+  background: linear-gradient(to bottom, transparent 0%, #06070d 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
 /* Very subtle deep ambient glow to avoid flat black */
 .hero-ambient {
   position: absolute;
