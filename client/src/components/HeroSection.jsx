@@ -97,7 +97,7 @@ export default function HeroSection() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
               className="hero-main-bg"
               style={{ backgroundImage: `url(${activeGame.image_url})` }}
             >
@@ -106,7 +106,7 @@ export default function HeroSection() {
                   initial={{ x: 50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   exit={{ x: -50, opacity: 0 }}
-                  transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
+                  transition={{ delay: 0.05, duration: 0.25, ease: 'easeOut' }}
                   className="hero-main-info"
                 >
                   <div className="hero-badge-epic">BARU RILIS</div>
@@ -114,7 +114,7 @@ export default function HeroSection() {
                     <motion.img 
                       initial={{ x: 50, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+                      transition={{ delay: 0.15, duration: 0.3, ease: 'easeOut' }}
                       src={activeGame.logo_url} 
                       alt={activeGame.title} 
                       className="hero-main-logo" 
@@ -123,7 +123,7 @@ export default function HeroSection() {
                     <motion.h2 
                       initial={{ x: 50, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+                      transition={{ delay: 0.15, duration: 0.3, ease: 'easeOut' }}
                       className="hero-main-title"
                     >
                       {activeGame.title}
