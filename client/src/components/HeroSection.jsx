@@ -19,8 +19,9 @@ export default function HeroSection() {
           .from('games')
           .select('*')
           .eq('isdeleted', 0)
+          .eq('is_carousel', true)
           .order('createddate', { ascending: false })
-          .limit(5); // Mengambil 5 game terbaru
+          .limit(8); 
         
         if (data && data.length > 0) {
           setGames(data);
@@ -109,7 +110,11 @@ export default function HeroSection() {
                   className="hero-main-info"
                 >
                   <div className="hero-badge-epic">BARU RILIS</div>
-                  <h2 className="hero-main-title">{activeGame.title}</h2>
+                  {activeGame.logo_url ? (
+                    <img src={activeGame.logo_url} alt={activeGame.title} className="hero-main-logo" />
+                  ) : (
+                    <h2 className="hero-main-title">{activeGame.title}</h2>
+                  )}
                   <p className="hero-main-desc">{activeGame.description?.substring(0, 120)}...</p>
                   
                   <div className="hero-main-price-row">

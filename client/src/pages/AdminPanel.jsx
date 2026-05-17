@@ -133,6 +133,7 @@ export default function AdminPanel() {
       image_url: '', category: '', developer: '', publisher: '',
       release_date: '', platform: 'PC', rating: 4.0,
       min_requirements: '', rec_requirements: '',
+      is_carousel: false, logo_url: ''
     });
     setShowModal(true);
   };
@@ -153,8 +154,42 @@ export default function AdminPanel() {
       rating: game.rating || 4.0,
       min_requirements: game.min_requirements || '',
       rec_requirements: game.rec_requirements || '',
+      is_carousel: game.is_carousel || false,
+      logo_url: game.logo_url || ''
     });
     setShowModal(true);
+  };
+
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const fileName = `logo_${Date.now()}_${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
+      
+      const { data, error } = await supabase.storage
+        .from('Game-Img')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('Game-Img')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, logo_url: publicUrl }));
+      toast.success('Logo berhasil diunggah!');
+    } catch (err) {
+      console.error('Upload logo error:', err);
+      toast.error(err.message || 'Gagal mengunggah logo');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -228,6 +263,8 @@ export default function AdminPanel() {
       rating: parseFloat(formData.rating),
       min_requirements: formData.min_requirements,
       rec_requirements: formData.rec_requirements,
+      is_carousel: formData.is_carousel,
+      logo_url: formData.logo_url,
       lastupdateddate: new Date().toISOString(),
       createdby: editingGame ? editingGame.createdby : adminUser,
       lastupdatedby: adminUser,
@@ -1742,6 +1779,51 @@ export default function AdminPanel() {
                   <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Atau URL gambar manual:</div>
                   <input className="form-input" value={formData.image_url} placeholder="https://..."
                     onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} style={{ marginTop: 4 }} />
+                </div>
+                
+                {/* === NEW: Carousel Settings === */}
+                <div className="form-group" style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginTop: '8px' }}>
+                  <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginBottom: '16px' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={formData.is_carousel}
+                      onChange={(e) => setFormData({ ...formData, is_carousel: e.target.checked })}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Tampilkan di Carousel Hero (Beranda)</span>
+                  </label>
+                  
+                  {formData.is_carousel && (
+                    <div style={{ marginTop: '12px' }}>
+                      <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        Logo Game <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>(Opsional, untuk mengganti teks judul di Carousel)</span>
+                      </label>
+                      <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        {formData.logo_url ? (
+                          <div style={{ background: '#0B0C10', padding: '8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <img src={formData.logo_url} alt="Logo" style={{ maxWidth: '120px', maxHeight: '40px', objectFit: 'contain' }} />
+                          </div>
+                        ) : (
+                          <div style={{ width: 120, height: 40, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem' }}>
+                            Logo
+                          </div>
+                        )}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            onChange={handleLogoUpload} 
+                            disabled={uploadingImage}
+                            className="form-input"
+                            style={{ padding: '8px', cursor: uploadingImage ? 'not-allowed' : 'pointer' }}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Atau URL manual:</div>
+                      <input className="form-input" value={formData.logo_url || ''} placeholder="https://..."
+                        onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })} style={{ marginTop: 4 }} />
+                    </div>
+                  )}
                 </div>
                 <div className="form-group">
                   <label className="form-label">Platform</label>
