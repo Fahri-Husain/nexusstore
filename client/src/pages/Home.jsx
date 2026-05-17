@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import GameCard from '../components/GameCard';
 import HeroSection from '../components/HeroSection';
+import PromoBanner from '../components/PromoBanner';
 import { HiOutlineArrowRight } from 'react-icons/hi';
 import { motion } from 'framer-motion';
 import { AnimatedLink, staggerContainer, staggerItem } from '../lib/motionUtils';
@@ -67,6 +68,7 @@ export default function Home() {
   return (
     <div className="home-page">
       <div className="hero-wrapper">
+        <PromoBanner />
         <HeroSection />
       </div>
 
