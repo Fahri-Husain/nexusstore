@@ -21,6 +21,8 @@ export default function HeroSection() {
         if (data && data.length > 0) setBanners(data);
       } catch (err) {
         console.error('Failed to fetch banners:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchBanners();
