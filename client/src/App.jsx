@@ -67,10 +67,13 @@ function App() {
     checkPendingOrder();
   }, [location.pathname, clearCart]);
 
+  const isHomePage = location.pathname === '/';
+  const showBroadcast = broadcast && !isAdminPage && !isAuthPage && isHomePage;
+
   return (
     <div className={`app ${!hideNavAndFooter ? 'app-fancy-bg' : ''} ${isAdminPage ? 'admin-layout' : ''}`}>
       <ScrollToTop />
-      {broadcast && !isAdminPage && !isAuthPage && (
+      {showBroadcast && (
         <div className="global-broadcast-banner" style={{ 
           background: broadcast.type === 'error' ? 'var(--accent-red)' : broadcast.type === 'warning' ? 'var(--accent-yellow)' : '#3A86FF', 
           color: broadcast.type === 'warning' ? '#000' : '#fff',
@@ -93,9 +96,9 @@ function App() {
           {broadcast.message}
         </div>
       )}
-      {!hideNavAndFooter && <Navbar hasBroadcast={!!(broadcast && !isAdminPage)} />}
+      {!hideNavAndFooter && <Navbar hasBroadcast={showBroadcast} />}
       
-      <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"} style={!hideNavAndFooter && !isAdminPage ? { paddingTop: broadcast ? '108px' : '64px' } : {}}>
+      <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"} style={!hideNavAndFooter && !isAdminPage ? { paddingTop: showBroadcast ? '108px' : '64px' } : {}}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><Home /></PageTransition>} />
