@@ -215,25 +215,27 @@ export default function GameDetail() {
             <span className="gd-action-final">{formatPrice(discountedPrice)}</span>
           </div>
 
-          <div className="gd-action-btns">
-            {isOwned ? (
-              <AnimatedLink to="/library" className="btn btn-secondary btn-lg gd-cta-btn">
-                <HiCheck /> Sudah Dimiliki — Buka Perpustakaan
-              </AnimatedLink>
-            ) : isInCart(game.game_id) ? (
-              <AnimatedLink to="/cart" className="btn btn-secondary btn-lg gd-cta-btn">
-                <HiCheck /> Dalam Keranjang — Lihat Keranjang
-              </AnimatedLink>
-            ) : (
-              <AnimatedButton className="btn btn-primary btn-lg gd-cta-btn" onClick={handleAddToCart}>
-                <HiOutlineShoppingCart /> Tambahkan ke Keranjang
-              </AnimatedButton>
-            )}
-          </div>
+          <div className="gd-action-right">
+            <div className="gd-action-btns">
+              {isOwned ? (
+                <AnimatedLink to="/library" className="btn btn-secondary btn-lg gd-cta-btn">
+                  <HiCheck /> Sudah Dimiliki — Buka Perpustakaan
+                </AnimatedLink>
+              ) : isInCart(game.game_id) ? (
+                <AnimatedLink to="/cart" className="btn btn-secondary btn-lg gd-cta-btn">
+                  <HiCheck /> Dalam Keranjang — Lihat Keranjang
+                </AnimatedLink>
+              ) : (
+                <AnimatedButton className="btn btn-primary btn-lg gd-cta-btn" onClick={handleAddToCart}>
+                  <HiOutlineShoppingCart /> Tambahkan ke Keranjang
+                </AnimatedButton>
+              )}
+            </div>
 
-          <div className="gd-action-secure">
-            <HiOutlineLockClosed />
-            <span>Pembayaran aman via Midtrans</span>
+            <div className="gd-action-secure">
+              <HiOutlineLockClosed />
+              <span>Pembayaran aman via Midtrans</span>
+            </div>
           </div>
         </motion.div>
 
