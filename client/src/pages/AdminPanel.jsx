@@ -133,7 +133,7 @@ export default function AdminPanel() {
       image_url: '', category: '', developer: '', publisher: '',
       release_date: '', platform: 'PC', rating: 4.0,
       min_requirements: '', rec_requirements: '',
-      is_carousel: false, logo_url: ''
+      is_carousel: false, logo_url: '', hero_image_url: ''
     });
     setShowModal(true);
   };
@@ -155,9 +155,31 @@ export default function AdminPanel() {
       min_requirements: game.min_requirements || '',
       rec_requirements: game.rec_requirements || '',
       is_carousel: game.is_carousel || false,
-      logo_url: game.logo_url || ''
+      logo_url: game.logo_url || '',
+      hero_image_url: game.hero_image_url || ''
     });
     setShowModal(true);
+  };
+
+
+  const handleHeroImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setUploadingImage(true);
+      const fileName = `hero_${Date.now()}_${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
+      const { data, error } = await supabase.storage.from('Game-Img').upload(fileName, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('Game-Img').getPublicUrl(fileName);
+      setFormData(prev => ({ ...prev, hero_image_url: publicUrl }));
+      toast.success('Background Carousel berhasil diunggah!');
+    } catch (err) {
+      console.error('Upload hero bg error:', err);
+      toast.error(err.message || 'Gagal mengunggah background');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
   };
 
   const handleLogoUpload = async (e) => {
@@ -265,6 +287,7 @@ export default function AdminPanel() {
       rec_requirements: formData.rec_requirements,
       is_carousel: formData.is_carousel,
       logo_url: formData.logo_url,
+      hero_image_url: formData.hero_image_url,
       lastupdateddate: new Date().toISOString(),
       createdby: editingGame ? editingGame.createdby : adminUser,
       lastupdatedby: adminUser,

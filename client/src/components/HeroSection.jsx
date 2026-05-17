@@ -99,7 +99,7 @@ export default function HeroSection() {
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
               className="hero-main-bg"
-              style={{ backgroundImage: `url(${activeGame.image_url})` }}
+              style={{ backgroundImage: `url(${activeGame.hero_image_url || activeGame.image_url})` }}
             >
               <div className="hero-main-overlay">
                 <motion.div 
