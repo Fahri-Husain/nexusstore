@@ -119,7 +119,7 @@ export default function GameDetail() {
           <div className="gd-left">
             <div className="gd-screenshot-box">
               <img
-                src={game.image_url}
+                src={game.detail_image_url || game.image_url}
                 alt={game.title}
                 className="gd-screenshot-img"
                 onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = fallbackSvg(game.title); } }}
@@ -131,7 +131,7 @@ export default function GameDetail() {
               {[1, 2, 3, 4, 5].map((_, i) => (
                 <div key={i} className={`gd-thumb ${i === 0 ? 'active' : ''}`}>
                   <img
-                    src={game.image_url}
+                    src={game.detail_image_url || game.image_url}
                     alt={`screenshot-${i + 1}`}
                     onError={(e) => { if (!e.target.dataset.hasError) { e.target.dataset.hasError = 'true'; e.target.src = fallbackSvg(game.title); } }}
                   />

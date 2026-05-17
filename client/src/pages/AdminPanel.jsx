@@ -133,7 +133,7 @@ export default function AdminPanel() {
       image_url: '', category: '', developer: '', publisher: '',
       release_date: '', platform: 'PC', rating: 4.0,
       min_requirements: '', rec_requirements: '',
-      is_carousel: false, logo_url: '', hero_image_url: ''
+      is_carousel: false, logo_url: '', hero_image_url: '', detail_image_url: ''
     });
     setShowModal(true);
   };
@@ -156,11 +156,55 @@ export default function AdminPanel() {
       rec_requirements: game.rec_requirements || '',
       is_carousel: game.is_carousel || false,
       logo_url: game.logo_url || '',
-      hero_image_url: game.hero_image_url || ''
+      hero_image_url: game.hero_image_url || '',
+      detail_image_url: game.detail_image_url || ''
     });
     setShowModal(true);
   };
 
+
+
+  const handleDetailImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setUploadingImage(true);
+      const webpBlob = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Gagal mengkonversi gambar ke .webp'));
+            }, 'image/webp', 0.85);
+          };
+          img.onerror = () => reject(new Error('Gagal memuat gambar'));
+          img.src = event.target.result;
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
+        reader.readAsDataURL(file);
+      });
+
+      const fileName = `detail_${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+      const { data, error } = await supabase.storage.from('Game-Img').upload(fileName, webpBlob, { contentType: 'image/webp', cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('Game-Img').getPublicUrl(fileName);
+      setFormData(prev => ({ ...prev, detail_image_url: publicUrl }));
+      toast.success('Detail Image berhasil diunggah!');
+    } catch (err) {
+      console.error('Upload detail img error:', err);
+      toast.error(err.message || 'Gagal mengunggah gambar detail');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
 
   const handleHeroImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -288,6 +332,7 @@ export default function AdminPanel() {
       is_carousel: formData.is_carousel,
       logo_url: formData.logo_url,
       hero_image_url: formData.hero_image_url,
+      detail_image_url: formData.detail_image_url,
       lastupdateddate: new Date().toISOString(),
       createdby: editingGame ? editingGame.createdby : adminUser,
       lastupdatedby: adminUser,
@@ -1835,6 +1880,37 @@ export default function AdminPanel() {
                       onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })} style={{ marginTop: 4 }} />
                   </div>
                 </div>
+
+                  <div style={{ marginTop: '24px', gridColumn: '1 / -1' }}>
+                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      Detail Image <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-muted)' }}>(Lanskap lebar untuk Screenshot Utama halaman Detail Game)</span>
+                    </label>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                      {formData.detail_image_url ? (
+                        <div style={{ background: '#0B0C10', padding: '4px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <img src={formData.detail_image_url} alt="Detail" style={{ maxWidth: '120px', maxHeight: '60px', objectFit: 'cover', borderRadius: '4px' }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: 120, height: 60, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '0.8rem' }}>
+                          IMG
+                        </div>
+                      )}
+                      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          onChange={handleDetailImageUpload} 
+                          disabled={uploadingImage}
+                          className="form-input"
+                          style={{ padding: '8px', cursor: uploadingImage ? 'not-allowed' : 'pointer' }}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Atau URL manual:</div>
+                    <input className="form-input" value={formData.detail_image_url || ''} placeholder="https://..."
+                      onChange={(e) => setFormData({ ...formData, detail_image_url: e.target.value })} style={{ marginTop: 4 }} />
+                  </div>
+
                 
                 {/* === NEW: Carousel Settings === */}
                 <div className="form-group" style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.02)', padding: '16px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)', marginTop: '8px' }}>
