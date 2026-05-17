@@ -8,6 +8,7 @@ import './HeroSection.css';
 export default function HeroSection() {
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchBanners = async () => {
