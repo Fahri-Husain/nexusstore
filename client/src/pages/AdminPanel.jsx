@@ -229,7 +229,7 @@ export default function AdminPanel() {
       min_requirements: formData.min_requirements,
       rec_requirements: formData.rec_requirements,
       lastupdateddate: new Date().toISOString(),
-      createdby: adminUser,
+      createdby: editingGame ? editingGame.createdby : adminUser,
       lastupdatedby: adminUser,
     };
 
@@ -468,7 +468,7 @@ export default function AdminPanel() {
 
   const handleBroadcastSubmit = async (e) => {
     e.preventDefault();
-    const body = { ...broadcastForm, createdby: adminUser, lastupdatedby: adminUser };
+    const body = { ...broadcastForm, createdby: editingBroadcast ? editingBroadcast.createdby : adminUser, lastupdatedby: adminUser };
     try {
       const url = editingBroadcast ? `${API_URL}/broadcasts/${editingBroadcast.id}` : `${API_URL}/broadcasts`;
       const method = editingBroadcast ? 'PUT' : 'POST';
@@ -555,7 +555,7 @@ export default function AdminPanel() {
 
   const handleBannerSubmit = async (e) => {
     e.preventDefault();
-    const body = { ...bannerForm, createdby: adminUser, lastupdatedby: adminUser };
+    const body = { ...bannerForm, createdby: editingBanner ? editingBanner.createdby : adminUser, lastupdatedby: adminUser };
     try {
       const url = editingBanner ? `${API_URL}/banners/${editingBanner.id}` : `${API_URL}/banners`;
       const method = editingBanner ? 'PUT' : 'POST';
@@ -740,7 +740,7 @@ export default function AdminPanel() {
       min_purchase: parseFloat(voucherForm.min_purchase) || 0,
       max_uses: voucherForm.max_uses !== '' ? parseInt(voucherForm.max_uses) : null,
       expired_at: voucherForm.expired_at || null,
-      createdby: adminUser,
+      createdby: editingVoucher ? editingVoucher.createdby : adminUser,
       lastupdatedby: adminUser,
     };
     try {
