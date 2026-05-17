@@ -1422,12 +1422,13 @@ export default function AdminPanel() {
                         <th>Banner</th>
                         <th>Status</th>
                         <th>Target URL</th>
+                        <th>Tanggal Berakhir</th>
                         <th>Info Audit</th>
                       </tr>
                     </thead>
                     <tbody>
                       {banners.length === 0 ? (
-                        <tr><td colSpan="5" className="admin-table-empty">Belum ada banner</td></tr>
+                        <tr><td colSpan="6" className="admin-table-empty">Belum ada banner</td></tr>
                       ) : banners.map(b => (
                         <tr key={b.id}>
                           <td>
@@ -1451,6 +1452,9 @@ export default function AdminPanel() {
                             </span>
                           </td>
                           <td className="text-sm">{b.target_url || '-'}</td>
+                          <td className="text-sm">
+                            {b.end_date ? new Date(b.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'}).replace('.', ':') : '-'}
+                          </td>
                           <td className="text-sm">
                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{b.lastupdatedby || 'Admin'}</div>
                             <div style={{ whiteSpace: 'nowrap' }}>{b.lastupdateddate ? new Date(b.lastupdateddate).toLocaleDateString('id-ID') : '-'}</div>
