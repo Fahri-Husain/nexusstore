@@ -111,9 +111,23 @@ export default function HeroSection() {
                 >
                   <div className="hero-badge-epic">BARU RILIS</div>
                   {activeGame.logo_url ? (
-                    <img src={activeGame.logo_url} alt={activeGame.title} className="hero-main-logo" />
+                    <motion.img 
+                      initial={{ x: 50, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+                      src={activeGame.logo_url} 
+                      alt={activeGame.title} 
+                      className="hero-main-logo" 
+                    />
                   ) : (
-                    <h2 className="hero-main-title">{activeGame.title}</h2>
+                    <motion.h2 
+                      initial={{ x: 50, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.5, ease: 'easeOut' }}
+                      className="hero-main-title"
+                    >
+                      {activeGame.title}
+                    </motion.h2>
                   )}
                   <p className="hero-main-desc">{activeGame.description?.substring(0, 120)}...</p>
                   
