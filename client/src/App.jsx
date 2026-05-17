@@ -95,7 +95,7 @@ function App() {
       )}
       {!hideNavAndFooter && <Navbar hasBroadcast={!!(broadcast && !isAdminPage)} />}
       
-      <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"} style={broadcast && !isAdminPage ? { paddingTop: '38px' } : {}}>
+      <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"} style={!hideNavAndFooter && !isAdminPage ? { paddingTop: broadcast ? '108px' : '64px' } : {}}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<PageTransition><Home /></PageTransition>} />

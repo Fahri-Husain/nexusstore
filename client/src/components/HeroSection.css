@@ -1,12 +1,12 @@
 /* ── Hero Minimalist ─────────────────────────────── */
 .hero-minimalist {
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  padding: 160px 0 var(--spacing-2xl); /* Increased top padding to pull content down */
+  padding: 40px 0 var(--spacing-2xl); /* Adjusted since main has padding-top now */
 }
 
 /* Very subtle deep ambient glow to avoid flat black */
@@ -79,6 +79,6 @@
 
 @media (max-width: 768px) {
   .hero-minimalist {
-    min-height: 85vh;
+    min-height: calc(100vh - 64px);
   }
 }
