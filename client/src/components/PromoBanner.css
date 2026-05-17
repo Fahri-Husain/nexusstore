@@ -7,6 +7,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Removed border-bottom for smooth gradient transition */
 }
 
 /* Jika Anda tidak ingin banner menembus navbar, hapus margin-top dan padding-top di atas, 
@@ -15,7 +16,7 @@
 .promo-mega-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, #0B0C10 0%, rgba(11, 12, 16, 0.6) 40%, rgba(11, 12, 16, 0.1) 100%);
+  background: linear-gradient(to top, rgba(11, 12, 16, 1) 0%, rgba(11, 12, 16, 0.5) 40%, rgba(11, 12, 16, 0.1) 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -35,7 +36,7 @@
 }
 
 .promo-mega-title {
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(2rem, 5vw, 4rem);
   font-weight: 900;
   color: #fff;
   line-height: 1;
@@ -46,7 +47,7 @@
 }
 
 .promo-mega-subtitle {
-  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  font-size: clamp(1rem, 1.5vw, 1.15rem);
   color: rgba(255, 255, 255, 0.9);
   line-height: 1.5;
   text-shadow: 0 4px 10px rgba(0,0,0,0.8);
