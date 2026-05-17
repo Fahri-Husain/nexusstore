@@ -1518,9 +1518,13 @@ export default function AdminPanel() {
                             {v.expired_at ? new Date(v.expired_at).toLocaleDateString('id-ID') : '–'}
                           </td>
                           <td>
-                            <span className={`badge badge-${v.is_active ? 'success' : 'danger'}`}>
-                              {v.is_active ? 'Aktif' : 'Nonaktif'}
-                            </span>
+                            {v.is_active && v.max_uses && v.used_count >= v.max_uses ? (
+                              <span className="badge badge-warning" title="Batas penggunaan tercapai">Terpakai</span>
+                            ) : (
+                              <span className={`badge badge-${v.is_active ? 'success' : 'danger'}`}>
+                                {v.is_active ? 'Aktif' : 'Nonaktif'}
+                              </span>
+                            )}
                           </td>
                           <td className="text-sm">{v.createdby || 'Admin'}</td>
                           <td className="text-sm" style={{ whiteSpace: 'nowrap' }}>{v.createddate ? new Date(v.createddate).toLocaleString('id-ID') : '-'}</td>
