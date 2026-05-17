@@ -58,7 +58,19 @@ export default function HeroSection() {
   const activeBanner = banners[currentIndex];
 
   if (isLoading) {
-    return <section className="hero-minimalist" style={{ position: 'relative' }}></section>;
+    return (
+      <section className="hero-minimalist" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <div className="hero-ambient" style={{ zIndex: 1, opacity: 0.5 }} />
+        <div className="container hero-content" style={{ zIndex: 2, position: 'relative' }}>
+          <div className="hero-text-wrapper" style={{ opacity: 0.7 }}>
+            <div style={{ width: '120px', height: '24px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', marginBottom: '16px' }} />
+            <div style={{ width: '80%', maxWidth: '500px', height: '64px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', marginBottom: '16px' }} />
+            <div style={{ width: '60%', maxWidth: '400px', height: '20px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '32px' }} />
+            <div style={{ width: '180px', height: '50px', background: 'rgba(255,255,255,0.1)', borderRadius: '25px' }} />
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
