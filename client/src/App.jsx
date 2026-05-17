@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
@@ -21,6 +21,8 @@ import AdminPanel from './pages/AdminPanel';
 import Support from './pages/Support';
 import ScrollToTop from './components/ScrollToTop';
 import { useCart } from './context/CartContext';
+import { supabase } from './lib/supabase';
+import { HiOutlineExclamationCircle, HiOutlineInformationCircle } from 'react-icons/hi';
 import './App.css';
 
 const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
@@ -31,6 +33,19 @@ function App() {
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
   const isAdminPage = location.pathname.startsWith('/admin');
   const hideNavAndFooter = isAuthPage || isAdminPage;
+  const [broadcast, setBroadcast] = useState(null);
+
+  useEffect(() => {
+    const fetchBroadcast = async () => {
+      try {
+        const { data } = await supabase.from('broadcasts').select('*').eq('is_active', true).order('createddate', { ascending: false }).limit(1);
+        if (data && data.length > 0) setBroadcast(data[0]);
+      } catch (err) {
+        console.error('Error fetching broadcast:', err);
+      }
+    };
+    fetchBroadcast();
+  }, [location.pathname]); // Re-check on navigation
 
   useEffect(() => {
     const checkPendingOrder = async () => {
@@ -55,6 +70,25 @@ function App() {
   return (
     <div className={`app ${!hideNavAndFooter ? 'app-fancy-bg' : ''} ${isAdminPage ? 'admin-layout' : ''}`}>
       <ScrollToTop />
+      {broadcast && !isAdminPage && (
+        <div style={{ 
+          background: broadcast.type === 'error' ? 'var(--danger-color)' : broadcast.type === 'warning' ? 'var(--warning-color)' : 'var(--primary-color)', 
+          color: broadcast.type === 'warning' ? '#000' : '#fff',
+          padding: '8px 16px', 
+          textAlign: 'center', 
+          fontSize: '0.9rem', 
+          fontWeight: 500,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: '8px',
+          zIndex: 1000,
+          position: 'relative'
+        }}>
+          {broadcast.type === 'error' || broadcast.type === 'warning' ? <HiOutlineExclamationCircle size={18} /> : <HiOutlineInformationCircle size={18} />}
+          {broadcast.message}
+        </div>
+      )}
       {!hideNavAndFooter && <Navbar />}
       
       <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"}>

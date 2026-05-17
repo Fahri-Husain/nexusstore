@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import {
@@ -7,7 +7,7 @@ import {
   HiOutlineClipboardList, HiOutlineHome, HiOutlineRefresh,
   HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineStar,
   HiOutlineSearch, HiOutlineFilter, HiOutlineDownload, HiOutlineDocumentText,
-  HiOutlineChartBar, HiOutlineExclamationCircle, HiOutlineTicket,
+  HiOutlineChartBar, HiOutlineExclamationCircle, HiOutlineTicket, HiOutlinePhotograph, HiOutlineUsers, HiOutlineSpeakerphone, HiOutlineBan, HiOutlineCheckCircle,
 } from 'react-icons/hi';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
@@ -30,8 +30,28 @@ export default function AdminPanel() {
   const [editingGame, setEditingGame] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
+  const [adminUser, setAdminUser] = useState('Admin');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // ── Voucher State ────────────────────────────────
+  
+  
+  // ── Users & Broadcast State ──────────────────────
+  const [usersList, setUsersList] = useState([]);
+  
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [editingBroadcast, setEditingBroadcast] = useState(null);
+  const [broadcastForm, setBroadcastForm] = useState({ message: '', type: 'info', is_active: true });
+
+  // ── Banner State ─────────────────────────────────
+  const [banners, setBanners] = useState([]);
+  const [showBannerModal, setShowBannerModal] = useState(false);
+  const [editingBanner, setEditingBanner] = useState(null);
+  const [bannerForm, setBannerForm] = useState({
+    title: '', subtitle: '', image_url: '', target_url: '', is_active: true
+  });
+
   const [vouchers, setVouchers] = useState([]);
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState(null);
@@ -57,6 +77,11 @@ export default function AdminPanel() {
 
   useEffect(() => {
     fetchData();
+    const fetchUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user?.email) setAdminUser(data.user.email);
+    };
+    fetchUser();
   }, []);
 
   const fetchData = async () => {
@@ -64,6 +89,17 @@ export default function AdminPanel() {
     try {
       const gamesRes = await supabase.from('games').select('*').eq('isdeleted', 0).order('createddate', { ascending: false });
       setGames(gamesRes.data || []);
+
+      
+      const usersRes = await fetch(`${API_URL}/users/admin`).then(r => r.json()).catch(() => []);
+      setUsersList(Array.isArray(usersRes) ? usersRes : []);
+
+      const broadcastRes = await fetch(`${API_URL}/broadcasts/admin`).then(r => r.json()).catch(() => []);
+      setBroadcasts(Array.isArray(broadcastRes) ? broadcastRes : []);
+
+      const bannersRes = await fetch(`${API_URL}/banners/admin`).then(r => r.json()).catch(() => []);
+      setBanners(Array.isArray(bannersRes) ? bannersRes : []);
+
 
       // Fetch orders via backend to bypass RLS on order_items
       let ordersData = [];
@@ -121,6 +157,61 @@ export default function AdminPanel() {
     setShowModal(true);
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      
+      const webpBlob = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Gagal mengkonversi gambar ke .webp'));
+            }, 'image/webp', 0.85);
+          };
+          img.onerror = () => reject(new Error('Gagal memuat gambar'));
+          img.src = event.target.result;
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
+        reader.readAsDataURL(file);
+      });
+
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+      const { data, error } = await supabase.storage
+        .from('Game-Img')
+        .upload(fileName, webpBlob, {
+          contentType: 'image/webp',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('Game-Img')
+        .getPublicUrl(fileName);
+
+      setFormData(prev => ({ ...prev, image_url: publicUrl }));
+      toast.success('Gambar berhasil diunggah!');
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error(err.message || 'Gagal mengunggah gambar');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const gameData = {
@@ -138,6 +229,8 @@ export default function AdminPanel() {
       min_requirements: formData.min_requirements,
       rec_requirements: formData.rec_requirements,
       lastupdateddate: new Date().toISOString(),
+      createdby: adminUser,
+      lastupdatedby: adminUser,
     };
 
     try {
@@ -319,9 +412,180 @@ export default function AdminPanel() {
     { key: 'dashboard', label: 'Dashboard', icon: <HiOutlineViewGrid /> },
     { key: 'games', label: 'Games', icon: <HiOutlineCollection /> },
     { key: 'orders', label: 'Orders', icon: <HiOutlineClipboardList /> },
+    { key: 'banners', label: 'Banners', icon: <HiOutlinePhotograph /> },
     { key: 'vouchers', label: 'Voucher', icon: <HiOutlineTicket /> },
+    { key: 'users', label: 'Pengguna', icon: <HiOutlineUsers /> },
+    { key: 'broadcasts', label: 'Broadcast', icon: <HiOutlineSpeakerphone /> },
     { key: 'laporan', label: 'Laporan Penjualan', icon: <HiOutlineChartBar /> },
   ];
+
+  
+  
+  // ── Users Handlers ─────────────────────────────
+  const toggleUserRole = async (id, currentRole) => {
+    try {
+      const newRole = currentRole === 'admin' ? 'user' : 'admin';
+      const res = await fetch(`${API_URL}/users/admin/${id}/role`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole })
+      });
+      if (!res.ok) throw new Error('Gagal update role');
+      toast.success('Role berhasil diubah');
+      fetchData();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const toggleUserBan = async (id, isBanned) => {
+    try {
+      const res = await fetch(`${API_URL}/users/admin/${id}/suspend`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_banned: !isBanned })
+      });
+      if (!res.ok) throw new Error('Gagal update status');
+      toast.success(isBanned ? 'User di-unban' : 'User disuspend');
+      fetchData();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  // ── Broadcast Handlers ─────────────────────────
+  const openAddBroadcast = () => {
+    setEditingBroadcast(null);
+    setBroadcastForm({ message: '', type: 'info', is_active: true });
+    setShowBroadcastModal(true);
+  };
+
+  const openEditBroadcast = (b) => {
+    setEditingBroadcast(b);
+    setBroadcastForm({ message: b.message, type: b.type || 'info', is_active: b.is_active });
+    setShowBroadcastModal(true);
+  };
+
+  const handleBroadcastSubmit = async (e) => {
+    e.preventDefault();
+    const body = { ...broadcastForm, createdby: adminUser, lastupdatedby: adminUser };
+    try {
+      const url = editingBroadcast ? `${API_URL}/broadcasts/${editingBroadcast.id}` : `${API_URL}/broadcasts`;
+      const method = editingBroadcast ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error('Gagal menyimpan broadcast');
+      toast.success(editingBroadcast ? 'Broadcast diperbarui' : 'Broadcast ditambahkan');
+      setShowBroadcastModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleDeleteBroadcast = (id) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Hapus Broadcast',
+      message: 'Hapus broadcast ini?',
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_URL}/broadcasts/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Gagal menghapus');
+          toast.success('Broadcast dihapus');
+          fetchData();
+        } catch (err) {
+          toast.error(err.message);
+        }
+      }
+    });
+  };
+
+  // ── Banner Handlers ──────────────────────────────
+  const openAddBanner = () => {
+    setEditingBanner(null);
+    setBannerForm({ title: '', subtitle: '', image_url: '', target_url: '', is_active: true });
+    setShowBannerModal(true);
+  };
+
+  const openEditBanner = (b) => {
+    setEditingBanner(b);
+    setBannerForm({ title: b.title, subtitle: b.subtitle || '', image_url: b.image_url, target_url: b.target_url || '', is_active: b.is_active });
+    setShowBannerModal(true);
+  };
+
+  const handleBannerImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      setUploadingImage(true);
+      const webpBlob = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Gagal mengkonversi gambar'));
+            }, 'image/webp', 0.85);
+          };
+          img.onerror = () => reject(new Error('Gagal memuat gambar'));
+          img.src = event.target.result;
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
+        reader.readAsDataURL(file);
+      });
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+      const { error } = await supabase.storage.from('Game-Img').upload(fileName, webpBlob, { contentType: 'image/webp' });
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('Game-Img').getPublicUrl(fileName);
+      setBannerForm(prev => ({ ...prev, image_url: publicUrl }));
+      toast.success('Gambar banner berhasil diunggah!');
+    } catch (err) {
+      toast.error(err.message || 'Gagal mengunggah gambar');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleBannerSubmit = async (e) => {
+    e.preventDefault();
+    const body = { ...bannerForm, createdby: adminUser, lastupdatedby: adminUser };
+    try {
+      const url = editingBanner ? `${API_URL}/banners/${editingBanner.id}` : `${API_URL}/banners`;
+      const method = editingBanner ? 'PUT' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error('Gagal menyimpan banner');
+      toast.success(editingBanner ? 'Banner diperbarui' : 'Banner ditambahkan');
+      setShowBannerModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleDeleteBanner = (id, title) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Hapus Banner',
+      message: `Hapus banner "${title}"?`,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(`${API_URL}/banners/${id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Gagal menghapus');
+          toast.success('Banner dihapus');
+          fetchData();
+        } catch (err) {
+          toast.error(err.message);
+        }
+      }
+    });
+  };
 
   // ── Helper: get item count robustly (works even if RLS blocked) ────
   const getItemCount = (order) => {
@@ -476,6 +740,8 @@ export default function AdminPanel() {
       min_purchase: parseFloat(voucherForm.min_purchase) || 0,
       max_uses: voucherForm.max_uses !== '' ? parseInt(voucherForm.max_uses) : null,
       expired_at: voucherForm.expired_at || null,
+      createdby: adminUser,
+      lastupdatedby: adminUser,
     };
     try {
       const url = editingVoucher ? `${API_URL}/vouchers/${editingVoucher.id}` : `${API_URL}/vouchers`;
@@ -689,6 +955,10 @@ export default function AdminPanel() {
                         <th>Diskon</th>
                         <th>Rating</th>
                         <th>Kategori</th>
+                        <th>Created By</th>
+                        <th>Created Date</th>
+                        <th>Updated By</th>
+                        <th>Updated Date</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -722,6 +992,10 @@ export default function AdminPanel() {
                           <td>{game.discount > 0 ? <span className="badge badge-warning">{game.discount}%</span> : <span className="text-muted">-</span>}</td>
                           <td>⭐ {Number(game.rating).toFixed(1)}</td>
                           <td>{game.category ? <span className="admin-category-tag">{game.category}</span> : '-'}</td>
+                          <td className="text-sm">{game.createdby || 'Admin'}</td>
+                          <td className="text-sm" style={{ whiteSpace: 'nowrap' }}>{game.createddate ? new Date(game.createddate).toLocaleString('id-ID') : '-'}</td>
+                          <td className="text-sm">{game.lastupdatedby || 'Admin'}</td>
+                          <td className="text-sm" style={{ whiteSpace: 'nowrap' }}>{game.lastupdateddate ? new Date(game.lastupdateddate).toLocaleString('id-ID') : '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1012,7 +1286,184 @@ export default function AdminPanel() {
           )}
 
           {/* ─── VOUCHERS ─── */}
-          {activeTab === 'vouchers' && (
+          
+          
+          {/* ─── USERS ─── */}
+          {activeTab === 'users' && (
+            <div className="animate-fadeIn">
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3>Manajemen Pengguna <span className="admin-badge-count">{usersList.length}</span></h3>
+                </div>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Aksi</th>
+                        <th>Pengguna</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {usersList.length === 0 ? (
+                        <tr><td colSpan="5" className="admin-table-empty">Belum ada pengguna</td></tr>
+                      ) : usersList.map(u => (
+                        <tr key={u.id}>
+                          <td>
+                            <div className="admin-actions">
+                              <button className="btn btn-outline btn-sm" onClick={() => toggleUserRole(u.id, u.role)} title="Toggle Role">
+                                {u.role === 'admin' ? 'Jadikan User' : 'Jadikan Admin'}
+                              </button>
+                              <button className={u.is_banned ? "btn btn-success btn-sm" : "btn btn-danger btn-sm"} onClick={() => toggleUserBan(u.id, u.is_banned)} title="Toggle Ban">
+                                {u.is_banned ? <><HiOutlineCheckCircle /> Un-Suspend</> : <><HiOutlineBan /> Suspend</>}
+                              </button>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600 }}>{u.full_name || 'Tanpa Nama'}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Gabung: {new Date(u.createddate || u.created_at || new Date()).toLocaleDateString('id-ID')}</div>
+                          </td>
+                          <td>{u.email || '-'}</td>
+                          <td>
+                            <span className={`badge badge-${u.role === 'admin' ? 'primary' : 'outline'}`}>
+                              {u.role ? u.role.toUpperCase() : 'USER'}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`badge badge-${u.is_banned ? 'danger' : 'success'}`}>
+                              {u.is_banned ? 'SUSPENDED' : 'AKTIF'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ─── BROADCASTS ─── */}
+          {activeTab === 'broadcasts' && (
+            <div className="animate-fadeIn">
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3>Sistem Broadcast <span className="admin-badge-count">{broadcasts.length}</span></h3>
+                  <button className="btn btn-primary btn-sm" onClick={openAddBroadcast}>
+                    <HiOutlinePlus /> Tambah Broadcast
+                  </button>
+                </div>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Aksi</th>
+                        <th>Pesan</th>
+                        <th>Tipe</th>
+                        <th>Status</th>
+                        <th>Info Audit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {broadcasts.length === 0 ? (
+                        <tr><td colSpan="5" className="admin-table-empty">Belum ada broadcast</td></tr>
+                      ) : broadcasts.map(b => (
+                        <tr key={b.id}>
+                          <td>
+                            <div className="admin-actions">
+                              <button className="btn btn-outline btn-sm" onClick={() => openEditBroadcast(b)} title="Edit"><HiOutlinePencil /></button>
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDeleteBroadcast(b.id)} title="Hapus"><HiOutlineTrash /></button>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: 600, maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.message}</div>
+                          </td>
+                          <td>
+                            <span className={`badge badge-${b.type === 'error' ? 'danger' : b.type === 'warning' ? 'warning' : 'primary'}`}>
+                              {b.type.toUpperCase()}
+                            </span>
+                          </td>
+                          <td>
+                            <span className={`badge badge-${b.is_active ? 'success' : 'danger'}`}>
+                              {b.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="text-sm">
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{b.lastupdatedby || 'Admin'}</div>
+                            <div style={{ whiteSpace: 'nowrap' }}>{b.lastupdateddate ? new Date(b.lastupdateddate).toLocaleDateString('id-ID') : '-'}</div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+{/* ─── BANNERS ─── */}
+          {activeTab === 'banners' && (
+            <div className="animate-fadeIn">
+              <div className="admin-card">
+                <div className="admin-card-header">
+                  <h3>Daftar Banner <span className="admin-badge-count">{banners.length}</span></h3>
+                  <button className="btn btn-primary btn-sm" onClick={openAddBanner}>
+                    <HiOutlinePlus /> Tambah Banner
+                  </button>
+                </div>
+                <div className="admin-table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Aksi</th>
+                        <th>Banner</th>
+                        <th>Status</th>
+                        <th>Target URL</th>
+                        <th>Info Audit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {banners.length === 0 ? (
+                        <tr><td colSpan="5" className="admin-table-empty">Belum ada banner</td></tr>
+                      ) : banners.map(b => (
+                        <tr key={b.id}>
+                          <td>
+                            <div className="admin-actions">
+                              <button className="btn btn-outline btn-sm" onClick={() => openEditBanner(b)} title="Edit"><HiOutlinePencil /></button>
+                              <button className="btn btn-danger btn-sm" onClick={() => handleDeleteBanner(b.id, b.title)} title="Hapus"><HiOutlineTrash /></button>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <img src={b.image_url} alt="" style={{ width: 80, height: 40, objectFit: 'cover', borderRadius: 4 }} />
+                              <div>
+                                <div style={{ fontWeight: 600 }}>{b.title}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{b.subtitle || '-'}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <span className={`badge badge-${b.is_active ? 'success' : 'danger'}`}>
+                              {b.is_active ? 'Aktif' : 'Nonaktif'}
+                            </span>
+                          </td>
+                          <td className="text-sm">{b.target_url || '-'}</td>
+                          <td className="text-sm">
+                            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{b.lastupdatedby || 'Admin'}</div>
+                            <div style={{ whiteSpace: 'nowrap' }}>{b.lastupdateddate ? new Date(b.lastupdateddate).toLocaleDateString('id-ID') : '-'}</div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+{activeTab === 'vouchers' && (
             <div className="animate-fadeIn">
               <div className="admin-card">
                 <div className="admin-card-header">
@@ -1033,6 +1484,10 @@ export default function AdminPanel() {
                         <th>Penggunaan</th>
                         <th>Expired</th>
                         <th>Status</th>
+                        <th>Created By</th>
+                        <th>Created Date</th>
+                        <th>Updated By</th>
+                        <th>Updated Date</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1067,6 +1522,10 @@ export default function AdminPanel() {
                               {v.is_active ? 'Aktif' : 'Nonaktif'}
                             </span>
                           </td>
+                          <td className="text-sm">{v.createdby || 'Admin'}</td>
+                          <td className="text-sm" style={{ whiteSpace: 'nowrap' }}>{v.createddate ? new Date(v.createddate).toLocaleString('id-ID') : '-'}</td>
+                          <td className="text-sm">{v.lastupdatedby || 'Admin'}</td>
+                          <td className="text-sm" style={{ whiteSpace: 'nowrap' }}>{v.lastupdateddate ? new Date(v.lastupdateddate).toLocaleString('id-ID') : '-'}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -1103,7 +1562,108 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* ─── MODAL ─── */}
+      
+      {/* ─── BANNER MODAL ─── */}
+      {showBannerModal && (
+        <div className="modal-overlay" onClick={() => setShowBannerModal(false)}>
+          <div className="modal-content animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingBanner ? 'Edit Banner' : 'Tambah Banner Baru'}</h2>
+              <button className="modal-close" onClick={() => setShowBannerModal(false)}><HiOutlineX /></button>
+            </div>
+            <form className="modal-form" onSubmit={handleBannerSubmit}>
+              <div className="form-group">
+                <label className="form-label">Judul Banner *</label>
+                <input className="form-input" required value={bannerForm.title} onChange={e => setBannerForm({...bannerForm, title: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Subjudul</label>
+                <input className="form-input" value={bannerForm.subtitle} onChange={e => setBannerForm({...bannerForm, subtitle: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Target URL</label>
+                <input className="form-input" placeholder="/collection" value={bannerForm.target_url} onChange={e => setBannerForm({...bannerForm, target_url: e.target.value})} />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Status Banner</label>
+                <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input type="radio" checked={bannerForm.is_active} onChange={() => setBannerForm({...bannerForm, is_active: true})} /> Aktif
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input type="radio" checked={!bannerForm.is_active} onChange={() => setBannerForm({...bannerForm, is_active: false})} /> Nonaktif
+                  </label>
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Banner Image *</label>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                  {bannerForm.image_url ? (
+                    <img src={bannerForm.image_url} alt="Preview" style={{ width: 120, height: 60, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)' }} />
+                  ) : (
+                    <div style={{ width: 120, height: 60, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)' }}>IMG</div>
+                  )}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input type="file" accept="image/*" onChange={handleBannerImageUpload} disabled={uploadingImage} className="form-input" style={{ padding: '8px', cursor: uploadingImage ? 'not-allowed' : 'pointer' }} />
+                    {uploadingImage && <div style={{ fontSize: '0.8rem', color: '#D4A853' }}>⏳ Mengunggah & mengkonversi...</div>}
+                  </div>
+                </div>
+                {!bannerForm.image_url && <div style={{ fontSize: '0.8rem', color: 'var(--danger-color)', marginTop: 4 }}>* Gambar wajib diupload</div>}
+              </div>
+              
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowBannerModal(false)}>Batal</button>
+                <button type="submit" className="btn btn-primary" disabled={!bannerForm.image_url || uploadingImage}>
+                  {uploadingImage ? 'Mengunggah...' : 'Simpan Banner'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+  
+      {/* ─── BROADCAST MODAL ─── */}
+      {showBroadcastModal && (
+        <div className="modal-overlay" onClick={() => setShowBroadcastModal(false)}>
+          <div className="modal-content animate-scaleIn" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingBroadcast ? 'Edit Broadcast' : 'Tambah Broadcast'}</h2>
+              <button className="modal-close" onClick={() => setShowBroadcastModal(false)}><HiOutlineX /></button>
+            </div>
+            <form className="modal-form" onSubmit={handleBroadcastSubmit}>
+              <div className="form-group">
+                <label className="form-label">Pesan Broadcast *</label>
+                <textarea className="form-input" required value={broadcastForm.message} onChange={e => setBroadcastForm({...broadcastForm, message: e.target.value})} rows={3}></textarea>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Tipe Pesan</label>
+                <select className="form-input" value={broadcastForm.type} onChange={e => setBroadcastForm({...broadcastForm, type: e.target.value})}>
+                  <option value="info">Info (Biru)</option>
+                  <option value="warning">Warning (Kuning)</option>
+                  <option value="error">Error/Maintenance (Merah)</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Status Broadcast</label>
+                <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input type="radio" checked={broadcastForm.is_active} onChange={() => setBroadcastForm({...broadcastForm, is_active: true})} /> Aktif
+                  </label>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                    <input type="radio" checked={!broadcastForm.is_active} onChange={() => setBroadcastForm({...broadcastForm, is_active: false})} /> Nonaktif
+                  </label>
+                </div>
+              </div>
+              
+              <div className="modal-actions">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowBroadcastModal(false)}>Batal</button>
+                <button type="submit" className="btn btn-primary">Simpan Broadcast</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+  {/* ─── MODAL ─── */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal-content animate-scaleIn" onClick={(e) => e.stopPropagation()}>
@@ -1136,10 +1696,31 @@ export default function AdminPanel() {
                   <input className="form-input" type="number" min="0" max="100" value={formData.discount}
                     onChange={(e) => setFormData({ ...formData, discount: e.target.value })} />
                 </div>
-                <div className="form-group">
-                  <label className="form-label">Cover Image URL</label>
-                  <input className="form-input" value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} />
+                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                  <label className="form-label">Cover Image</label>
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center', background: 'rgba(255,255,255,0.02)', padding: '12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    {formData.image_url ? (
+                      <img src={formData.image_url} alt="Preview" style={{ width: 60, height: 80, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)' }} />
+                    ) : (
+                      <div style={{ width: 60, height: 80, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)' }}>
+                        IMG
+                      </div>
+                    )}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handleImageUpload} 
+                        disabled={uploadingImage}
+                        className="form-input"
+                        style={{ padding: '8px', cursor: uploadingImage ? 'not-allowed' : 'pointer' }}
+                      />
+                      {uploadingImage && <div style={{ fontSize: '0.8rem', color: '#D4A853' }}>⏳ Mengunggah & mengkonversi ke .webp...</div>}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>Atau URL gambar manual:</div>
+                  <input className="form-input" value={formData.image_url} placeholder="https://..."
+                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })} style={{ marginTop: 4 }} />
                 </div>
                 <div className="form-group">
                   <label className="form-label">Platform</label>
@@ -1193,6 +1774,13 @@ export default function AdminPanel() {
                   onChange={(e) => setFormData({ ...formData, rec_requirements: e.target.value })}
                   style={{ resize: 'vertical' }} />
               </div>
+
+              {editingGame && (
+                <div className="admin-audit-info" style={{ marginTop: 24, padding: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  <div style={{ marginBottom: 6 }}><strong>Dibuat oleh:</strong> {editingGame.createdby || 'Admin'} pada {editingGame.createddate ? new Date(editingGame.createddate).toLocaleString('id-ID') : '-'}</div>
+                  <div><strong>Terakhir diubah:</strong> {editingGame.lastupdatedby || 'Admin'} pada {editingGame.lastupdateddate ? new Date(editingGame.lastupdateddate).toLocaleString('id-ID') : '-'}</div>
+                </div>
+              )}
 
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Batal</button>
@@ -1272,6 +1860,14 @@ export default function AdminPanel() {
                   onChange={e => setVoucherForm({ ...voucherForm, description: e.target.value })}
                   style={{ resize: 'vertical' }} />
               </div>
+
+              {editingVoucher && (
+                <div className="admin-audit-info" style={{ marginTop: 24, padding: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  <div style={{ marginBottom: 6 }}><strong>Dibuat oleh:</strong> {editingVoucher.createdby || 'Admin'} pada {editingVoucher.createddate ? new Date(editingVoucher.createddate).toLocaleString('id-ID') : '-'}</div>
+                  <div><strong>Terakhir diubah:</strong> {editingVoucher.lastupdatedby || 'Admin'} pada {editingVoucher.lastupdateddate ? new Date(editingVoucher.lastupdateddate).toLocaleString('id-ID') : '-'}</div>
+                </div>
+              )}
+
               <div className="modal-actions">
                 <button type="button" className="btn btn-secondary" onClick={() => setShowVoucherModal(false)}>Batal</button>
                 <button type="submit" className="btn btn-primary">

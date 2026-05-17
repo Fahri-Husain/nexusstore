@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext({});
 
@@ -19,6 +20,15 @@ export function AuthProvider({ children }) {
         .single();
 
       if (error) throw error;
+
+      if (data && data.is_banned) {
+        await supabase.auth.signOut();
+        setProfile(null);
+        setUser(null);
+        toast.error('Akses ditolak: Akun Anda telah ditangguhkan oleh Admin.');
+        return;
+      }
+
       setProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);

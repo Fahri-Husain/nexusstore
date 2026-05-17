@@ -72,7 +72,17 @@ router.get('/:id', async (req, res) => {
 // POST /api/games/admin — Add a game (admin, bypasses RLS)
 router.post('/admin', async (req, res) => {
   try {
-    const { error } = await supabase.from('games').insert({ ...req.body, status: 1, isdeleted: 0 });
+    const body = {
+      ...req.body,
+      status: 1,
+      isdeleted: 0,
+      createddate: new Date().toISOString(),
+      lastupdateddate: new Date().toISOString(),
+    };
+    if (!body.createdby) body.createdby = 'Admin';
+    if (!body.lastupdatedby) body.lastupdatedby = body.createdby;
+
+    const { error } = await supabase.from('games').insert(body);
     if (error) throw error;
     res.json({ success: true });
   } catch (err) {
@@ -83,7 +93,13 @@ router.post('/admin', async (req, res) => {
 // PUT /api/games/admin/:id — Update a game (admin, bypasses RLS)
 router.put('/admin/:id', async (req, res) => {
   try {
-    const { error } = await supabase.from('games').update(req.body).eq('game_id', req.params.id);
+    const body = {
+      ...req.body,
+      lastupdateddate: new Date().toISOString()
+    };
+    if (!body.lastupdatedby) body.lastupdatedby = 'Admin';
+
+    const { error } = await supabase.from('games').update(body).eq('game_id', req.params.id);
     if (error) throw error;
     res.json({ success: true });
   } catch (err) {

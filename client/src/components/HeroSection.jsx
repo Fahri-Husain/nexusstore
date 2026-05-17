@@ -1,9 +1,38 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { AnimatedLink } from '../lib/motionUtils';
+import { supabase } from '../lib/supabase';
 import './HeroSection.css';
 
 export default function HeroSection() {
+  const [banners, setBanners] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('banners')
+          .select('*')
+          .eq('is_active', true)
+          .order('createddate', { ascending: false });
+        if (data && data.length > 0) setBanners(data);
+      } catch (err) {
+        console.error('Failed to fetch banners:', err);
+      }
+    };
+    fetchBanners();
+  }, []);
+
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const timer = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % banners.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [banners.length]);
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -20,13 +49,22 @@ export default function HeroSection() {
     show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
+  const activeBanner = banners[currentIndex];
+
+  const heroStyle = activeBanner ? {
+    backgroundImage: `linear-gradient(to right, rgba(20, 21, 28, 0.98) 0%, rgba(20, 21, 28, 0.7) 40%, rgba(20, 21, 28, 0.1) 100%), url(${activeBanner.image_url})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center right',
+  } : {};
+
   return (
-    <section className="hero-minimalist">
+    <section className="hero-minimalist" style={heroStyle}>
       {/* Subtle ambient light */}
-      <div className="hero-ambient" />
+      {!activeBanner && <div className="hero-ambient" />}
       
       <div className="container hero-content">
         <motion.div 
+          key={currentIndex}
           className="hero-text-wrapper"
           variants={container}
           initial="hidden"
@@ -37,20 +75,51 @@ export default function HeroSection() {
           </motion.div>
           
           <motion.h1 variants={item} className="hero-title tracking-wide">
-            <span className="hero-title-gradient">ELEVATE</span> <br />
-            <span className="hero-title-gradient">YOUR PLAY.</span>
+            {activeBanner ? (
+              activeBanner.title.split('\n').map((line, i) => (
+                <span key={i} className="hero-title-gradient" style={{ display: 'block' }}>{line}</span>
+              ))
+            ) : (
+              <>
+                <span className="hero-title-gradient">ELEVATE</span> <br />
+                <span className="hero-title-gradient">YOUR PLAY.</span>
+              </>
+            )}
           </motion.h1>
           
-          <motion.p variants={item} className="hero-subtitle">
-            Koleksi pilihan aset digital berkualitas tinggi.
-            <br /> Rasakan generasi terbaru pengalaman interaktif yang tak terlupakan.
+          <motion.p variants={item} className="hero-subtitle" style={{ maxWidth: '600px', textShadow: activeBanner ? '0 2px 10px rgba(0,0,0,0.8)' : 'none' }}>
+            {activeBanner ? activeBanner.subtitle : (
+              <>
+                Koleksi pilihan aset digital berkualitas tinggi.
+                <br /> Rasakan generasi terbaru pengalaman interaktif yang tak terlupakan.
+              </>
+            )}
           </motion.p>
           
           <motion.div variants={item} className="hero-cta-group">
-            <AnimatedLink to="/collection" className="btn btn-primary btn-large">
-              JELAJAHI KOLEKSI
+            <AnimatedLink to={activeBanner?.target_url || "/collection"} className="btn btn-primary btn-large" style={{ boxShadow: activeBanner ? '0 8px 30px rgba(212, 168, 83, 0.3)' : 'none' }}>
+              {activeBanner ? 'LIHAT PROMO' : 'JELAJAHI KOLEKSI'}
             </AnimatedLink>
           </motion.div>
+
+          {banners.length > 1 && (
+            <motion.div variants={item} style={{ display: 'flex', gap: '8px', marginTop: '48px', alignItems: 'center' }}>
+              {banners.map((_, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => setCurrentIndex(i)} 
+                  style={{ 
+                    width: i === currentIndex ? '32px' : '8px', 
+                    height: '6px', 
+                    borderRadius: '4px', 
+                    background: i === currentIndex ? '#D4A853' : 'rgba(255,255,255,0.2)', 
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', 
+                    cursor: 'pointer' 
+                  }} 
+                />
+              ))}
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </section>

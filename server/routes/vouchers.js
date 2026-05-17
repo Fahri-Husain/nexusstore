@@ -71,8 +71,23 @@ router.post('/', async (req, res) => {
       createddate: new Date().toISOString(),
       lastupdateddate: new Date().toISOString(),
     };
+    
+    // Fallback or accept from req.body
+    if (!body.createdby) body.createdby = 'Admin';
+    if (!body.lastupdatedby) body.lastupdatedby = body.createdby;
+
     const { error } = await supabase.from('vouchers').insert(body);
-    if (error) throw error;
+    if (error) {
+      // If error is about createdby column not existing, let's gracefully remove it and retry
+      if (error.message && error.message.includes('createdby')) {
+        delete body.createdby;
+        delete body.lastupdatedby;
+        const retry = await supabase.from('vouchers').insert(body);
+        if (retry.error) throw retry.error;
+      } else {
+        throw error;
+      }
+    }
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -87,8 +102,21 @@ router.put('/:id', async (req, res) => {
       code: req.body.code?.toUpperCase(),
       lastupdateddate: new Date().toISOString(),
     };
+    
+    if (!body.lastupdatedby) body.lastupdatedby = 'Admin';
+
     const { error } = await supabase.from('vouchers').update(body).eq('id', req.params.id);
-    if (error) throw error;
+    if (error) {
+      // If error is about lastupdatedby column not existing, gracefully retry without it
+      if (error.message && error.message.includes('lastupdatedby')) {
+        delete body.lastupdatedby;
+        delete body.createdby; // just in case
+        const retry = await supabase.from('vouchers').update(body).eq('id', req.params.id);
+        if (retry.error) throw retry.error;
+      } else {
+        throw error;
+      }
+    }
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
