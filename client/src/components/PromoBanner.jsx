@@ -30,12 +30,12 @@ export default function PromoBanner() {
 
   if (!banner) return null;
 
-  const getEndDateText = (dateString) => {
-    if (!dateString) return "Promo waktu terbatas!";
-    const date = new Date(dateString);
-    date.setDate(date.getDate() + 14); // Promo berlangsung 14 hari dari tanggal dibuat
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return `Promo berakhir ${date.toLocaleDateString('id-ID', options)} pukul 22.00 WIB.`;
+  const getEndDateText = (endDateString) => {
+    if (!endDateString) return null;
+    const date = new Date(endDateString);
+    const dateOpts = { day: 'numeric', month: 'long', year: 'numeric' };
+    const timeOpts = { hour: '2-digit', minute: '2-digit' };
+    return `Promo berakhir ${date.toLocaleDateString('id-ID', dateOpts)} pukul ${date.toLocaleTimeString('id-ID', timeOpts).replace('.', ':')} WIB.`;
   };
 
   return (
@@ -55,9 +55,11 @@ export default function PromoBanner() {
               LIHAT PROMO
             </AnimatedLink>
             
-            <p className="promo-mega-end-date">
-              {getEndDateText(banner.createddate)}
-            </p>
+            {banner.end_date && (
+              <p className="promo-mega-end-date">
+                {getEndDateText(banner.end_date)}
+              </p>
+            )}
           </div>
         </div>
       </motion.section>

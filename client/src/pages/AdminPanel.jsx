@@ -503,13 +503,13 @@ export default function AdminPanel() {
   // ── Banner Handlers ──────────────────────────────
   const openAddBanner = () => {
     setEditingBanner(null);
-    setBannerForm({ title: '', subtitle: '', image_url: '', target_url: '', is_active: true });
+    setBannerForm({ title: '', subtitle: '', image_url: '', target_url: '', is_active: true, end_date: '' });
     setShowBannerModal(true);
   };
 
   const openEditBanner = (b) => {
     setEditingBanner(b);
-    setBannerForm({ title: b.title, subtitle: b.subtitle || '', image_url: b.image_url, target_url: b.target_url || '', is_active: b.is_active });
+    setBannerForm({ title: b.title, subtitle: b.subtitle || '', image_url: b.image_url, target_url: b.target_url || '', is_active: b.is_active, end_date: b.end_date ? new Date(b.end_date).toISOString().slice(0, 16) : '' });
     setShowBannerModal(true);
   };
 
@@ -556,6 +556,7 @@ export default function AdminPanel() {
   const handleBannerSubmit = async (e) => {
     e.preventDefault();
     const body = { ...bannerForm, createdby: editingBanner ? editingBanner.createdby : adminUser, lastupdatedby: adminUser };
+    if (!body.end_date) body.end_date = null;
     try {
       const url = editingBanner ? `${API_URL}/banners/${editingBanner.id}` : `${API_URL}/banners`;
       const method = editingBanner ? 'PUT' : 'POST';
@@ -1598,6 +1599,18 @@ export default function AdminPanel() {
                     <input type="radio" checked={!bannerForm.is_active} onChange={() => setBannerForm({...bannerForm, is_active: false})} /> Nonaktif
                   </label>
                 </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Tanggal Berakhir Event (Opsional)</label>
+                <input 
+                  type="datetime-local" 
+                  className="form-input" 
+                  value={bannerForm.end_date} 
+                  onChange={e => setBannerForm({...bannerForm, end_date: e.target.value})} 
+                />
+                <small style={{color: 'rgba(255,255,255,0.4)', display: 'block', marginTop: '4px'}}>
+                  Biarkan kosong jika ini bukan promo berbatas waktu.
+                </small>
               </div>
               <div className="form-group">
                 <label className="form-label">Banner Image *</label>
