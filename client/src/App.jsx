@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -73,8 +73,14 @@ function App() {
   return (
     <div className={`app ${!hideNavAndFooter ? 'app-fancy-bg' : ''} ${isAdminPage ? 'admin-layout' : ''}`}>
       <ScrollToTop />
-      {showBroadcast && (
-        <div className="global-broadcast-banner" style={{ 
+      <AnimatePresence>
+        {showBroadcast && (
+          <motion.div 
+            initial={{ y: -50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -50, opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            className="global-broadcast-banner" style={{ 
           background: broadcast.type === 'error' ? 'var(--accent-red)' : broadcast.type === 'warning' ? 'var(--accent-yellow)' : '#3A86FF', 
           color: broadcast.type === 'warning' ? '#000' : '#fff',
           padding: '8px 16px', 
@@ -93,9 +99,10 @@ function App() {
           boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
         }}>
           {broadcast.type === 'error' || broadcast.type === 'warning' ? <HiOutlineExclamationCircle size={18} /> : <HiOutlineInformationCircle size={18} />}
-          {broadcast.message}
-        </div>
-      )}
+            {broadcast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {!hideNavAndFooter && <Navbar hasBroadcast={showBroadcast} />}
       
       <main className={hideNavAndFooter && !isAdminPage ? "" : isAdminPage ? "admin-main" : "main-content"} style={!hideNavAndFooter && !isAdminPage ? { paddingTop: showBroadcast ? '108px' : '64px' } : {}}>
