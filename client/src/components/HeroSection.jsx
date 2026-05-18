@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedLink } from '../lib/motionUtils';
 import { supabase } from '../lib/supabase';
 import './HeroSection.css';
@@ -7,7 +6,9 @@ import './HeroSection.css';
 export default function HeroSection() {
   const [games, setGames] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [prevIndex, setPrevIndex] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [animKey, setAnimKey] = useState(0);
   const timerRef = useRef(null);
 
   const SLIDE_DURATION = 7000;
@@ -15,14 +16,14 @@ export default function HeroSection() {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('games')
           .select('*')
           .eq('isdeleted', 0)
           .eq('is_carousel', true)
           .order('createddate', { ascending: false })
-          .limit(8); 
-        
+          .limit(8);
+
         if (data && data.length > 0) {
           setGames(data);
         }
@@ -39,7 +40,11 @@ export default function HeroSection() {
     if (timerRef.current) clearInterval(timerRef.current);
     if (games.length <= 1) return;
     timerRef.current = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % games.length);
+      setCurrentIndex(prev => {
+        setPrevIndex(prev);
+        return (prev + 1) % games.length;
+      });
+      setAnimKey(k => k + 1);
     }, SLIDE_DURATION);
   };
 
@@ -51,8 +56,10 @@ export default function HeroSection() {
   }, [games.length, currentIndex]);
 
   const handleThumbnailClick = (index) => {
+    if (index === currentIndex) return;
+    setPrevIndex(currentIndex);
     setCurrentIndex(index);
-    // Timer otomatis terrestart karena useEffect dependency
+    setAnimKey(k => k + 1);
   };
 
   if (isLoading) {
@@ -72,13 +79,12 @@ export default function HeroSection() {
     );
   }
 
-  // Fallback jika tidak ada data sama sekali
   if (games.length === 0) {
     return (
       <section className="hero-epic-container" style={{ minHeight: '400px' }}>
-         <div className="container" style={{ textAlign: 'center', opacity: 0.5 }}>
-            <h2>Belum ada game tersedia.</h2>
-         </div>
+        <div className="container" style={{ textAlign: 'center', opacity: 0.5 }}>
+          <h2>Belum ada game tersedia.</h2>
+        </div>
       </section>
     );
   }
@@ -88,72 +94,64 @@ export default function HeroSection() {
   return (
     <section className="hero-epic-container">
       <div className="hero-epic-content">
-        
+
         {/* === MAIN DISPLAY (KIRI) === */}
         <div className="hero-epic-main">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={`main-${currentIndex}`}
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="hero-main-bg"
-              style={{ backgroundImage: `url(${activeGame.hero_image_url || activeGame.image_url})` }}
-            >
-              <div className="hero-main-overlay">
-                <motion.div 
-                  initial={{ x: 50, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: -50, opacity: 0 }}
-                  transition={{ delay: 0.05, duration: 0.25, ease: 'easeOut' }}
-                  className="hero-main-info"
-                >
-                  <div className="hero-badge-epic">BARU RILIS</div>
-                  {activeGame.logo_url ? (
-                    <motion.img 
-                      initial={{ x: 50, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.15, duration: 0.3, ease: 'easeOut' }}
-                      src={activeGame.logo_url} 
-                      alt={activeGame.title} 
-                      className="hero-main-logo" 
-                    />
-                  ) : (
-                    <motion.h2 
-                      initial={{ x: 50, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.15, duration: 0.3, ease: 'easeOut' }}
-                      className="hero-main-title"
-                    >
-                      {activeGame.title}
-                    </motion.h2>
-                  )}
-                  <p className="hero-main-desc">{activeGame.description?.substring(0, 120)}...</p>
-                  
-                  <div className="hero-main-price-row">
-                     {activeGame.discount > 0 ? (
-                        <>
-                          <span className="hero-discount-badge">-{activeGame.discount}%</span>
-                          <div className="hero-price-stack">
-                            <span className="hero-price-original">Rp {activeGame.price.toLocaleString('id-ID')}</span>
-                            <span className="hero-price-final">Rp {(activeGame.price - (activeGame.price * activeGame.discount / 100)).toLocaleString('id-ID')}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <span className="hero-price-final">
-                          {activeGame.price === 0 ? 'GRATIS' : `Rp ${activeGame.price.toLocaleString('id-ID')}`}
-                        </span>
-                      )}
-                  </div>
 
-                  <AnimatedLink to={`/game/${activeGame.game_id}`} className="btn btn-primary btn-epic">
-                    LIHAT GAME
-                  </AnimatedLink>
-                </motion.div>
+          {/* Background images - crossfade via CSS opacity */}
+          <div className="hero-bg-stage">
+            {games.map((game, index) => (
+              <div
+                key={game.game_id}
+                className={`hero-main-bg ${index === currentIndex ? 'active' : ''}`}
+                style={{ backgroundImage: `url(${game.hero_image_url || game.image_url})` }}
+              />
+            ))}
+          </div>
+
+          {/* Overlay gradient */}
+          <div className="hero-main-overlay">
+            {/* Content layer - animates in/out with CSS classes keyed to animKey */}
+            <div key={`content-${animKey}`} className="hero-main-info hero-content-enter">
+              <div className="hero-badge-epic">BARU RILIS</div>
+
+              {activeGame.logo_url ? (
+                <img
+                  src={activeGame.logo_url}
+                  alt={activeGame.title}
+                  className="hero-main-logo hero-logo-enter"
+                />
+              ) : (
+                <h2 className="hero-main-title">
+                  {activeGame.title}
+                </h2>
+              )}
+
+              <p className="hero-main-desc">
+                {activeGame.description?.substring(0, 120)}...
+              </p>
+
+              <div className="hero-main-price-row">
+                {activeGame.discount > 0 ? (
+                  <>
+                    <span className="hero-discount-badge">-{activeGame.discount}%</span>
+                    <div className="hero-price-stack">
+                      <span className="hero-price-original">Rp {activeGame.price.toLocaleString('id-ID')}</span>
+                      <span className="hero-price-final">Rp {(activeGame.price - (activeGame.price * activeGame.discount / 100)).toLocaleString('id-ID')}</span>
+                    </div>
+                  </>
+                ) : (
+                  <span className="hero-price-final">
+                    {activeGame.price === 0 ? 'GRATIS' : `Rp ${activeGame.price.toLocaleString('id-ID')}`}
+                  </span>
+                )}
               </div>
-            </motion.div>
-          </AnimatePresence>
+
+              <AnimatedLink to={`/game/${activeGame.game_id}`} className="btn btn-primary btn-epic">
+                LIHAT GAME
+              </AnimatedLink>
+            </div>
+          </div>
         </div>
 
         {/* === THUMBNAIL SIDEBAR (KANAN) === */}
@@ -161,20 +159,21 @@ export default function HeroSection() {
           {games.map((game, index) => {
             const isActive = index === currentIndex;
             return (
-              <div 
-                key={game.game_id} 
+              <div
+                key={game.game_id}
                 className={`hero-epic-thumbnail ${isActive ? 'active' : ''}`}
                 onClick={() => handleThumbnailClick(index)}
               >
-                {/* Progress Animation Layer */}
+                {/* Progress fill layer - only on active */}
                 {isActive && (
-                  <div 
-                    className="hero-epic-progress" 
-                    style={{ animationDuration: `${SLIDE_DURATION}ms` }} 
+                  <div
+                    key={`progress-${animKey}`}
+                    className="hero-epic-progress"
+                    style={{ animationDuration: `${SLIDE_DURATION}ms` }}
                   />
                 )}
-                
-                {/* Content Layer */}
+
+                {/* Content */}
                 <div className="hero-epic-thumbnail-content">
                   <img src={game.image_url} alt={game.title} className="hero-thumbnail-img" />
                   <span className="hero-thumbnail-title">{game.title}</span>

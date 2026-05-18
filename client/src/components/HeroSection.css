@@ -14,13 +14,13 @@
   width: 100%;
   display: flex;
   gap: 24px;
-  height: 560px; /* Tinggi fix agar seragam */
+  height: 560px;
 }
 
 /* === MAIN DISPLAY (KIRI) === */
 .hero-epic-main {
   flex-grow: 1;
-  flex-basis: calc(100% - 280px); /* Sisa ruang dikurangi lebar sidebar */
+  flex-basis: calc(100% - 280px);
   border-radius: 16px;
   overflow: hidden;
   position: relative;
@@ -28,25 +28,57 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
+/* Background stage: semua slide di-stack, hanya yg aktif opacity 1 */
+.hero-bg-stage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .hero-main-bg {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   background-size: cover;
   background-position: center;
-  position: relative;
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Slight zoom on enter for premium feel */
+  transform: scale(1.03);
+  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Gradien hitam dari bawah ke atas agar teks terbaca */
+.hero-main-bg.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Gradien overlay */
 .hero-main-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(10, 10, 14, 0.95) 0%, rgba(10, 10, 14, 0.4) 40%, transparent 100%);
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 14, 0.98) 0%,
+    rgba(10, 10, 14, 0.55) 35%,
+    rgba(10, 10, 14, 0.1) 65%,
+    transparent 100%
+  );
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding: 40px;
+  z-index: 2;
 }
 
+/* ============================================================
+   CONTENT ENTER ANIMATION — Mirror Epic Games Store behavior:
+   text block slides in from right (+80px) and fades in.
+   Logo has a separate, delayed slide-in.
+   ============================================================ */
 .hero-main-info {
   max-width: 600px;
   display: flex;
@@ -54,11 +86,43 @@
   gap: 12px;
 }
 
+/* Content block: slides up from 20px below + fade in */
+@keyframes heroContentEnter {
+  from {
+    opacity: 0;
+    transform: translateX(80px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Logo: slides in from right with a bigger delay */
+@keyframes heroLogoEnter {
+  from {
+    opacity: 0;
+    transform: translateX(80px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.hero-content-enter {
+  animation: heroContentEnter 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.hero-logo-enter {
+  animation: heroLogoEnter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.12s both;
+}
+
 .hero-badge-epic {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.1em;
-  background-color: rgba(255,255,255,0.1);
+  background-color: rgba(255,255,255,0.12);
   color: #fff;
   padding: 6px 12px;
   border-radius: 4px;
@@ -84,10 +148,9 @@
   margin: 8px 0;
 }
 
-
 .hero-main-desc {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.75);
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -131,11 +194,11 @@
 }
 
 .btn-epic {
-  padding: 16px 32px;
-  font-size: 1rem;
+  padding: 14px 32px;
+  font-size: 0.875rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
-  border-radius: 8px;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
   width: fit-content;
   text-transform: uppercase;
 }
@@ -146,12 +209,12 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .hero-epic-thumbnail {
-  height: calc((560px - (4 * 8px)) / 5); /* Dibagi 5 item dengan gap 8px */
-  border-radius: 12px;
+  height: calc((560px - (4 * 4px)) / 5);
+  border-radius: 8px;
   background-color: transparent;
   cursor: pointer;
   position: relative;
@@ -166,12 +229,17 @@
   background-color: rgba(255,255,255,0.05);
 }
 
+/* Active thumbnail — slightly elevated background, like Epic Games */
+.hero-epic-thumbnail.active {
+  background-color: rgb(40, 40, 44);
+}
+
 .hero-epic-thumbnail-content {
   position: relative;
-  z-index: 1; /* Di atas progress bar */
+  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
 }
 
@@ -181,34 +249,34 @@
   object-fit: cover;
   border-radius: 6px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  flex-shrink: 0;
 }
 
 .hero-thumbnail-title {
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: #fff;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
+  color: rgba(255,255,255,0.55);
+  transition: color 0.2s ease;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-height: 1.3;
 }
 
 .hero-epic-thumbnail:hover .hero-thumbnail-title {
-  opacity: 1;
-}
-
-/* Status Aktif */
-.hero-epic-thumbnail.active {
-  background-color: rgba(255,255,255,0.02);
+  color: rgba(255,255,255,0.9);
 }
 
 .hero-epic-thumbnail.active .hero-thumbnail-title {
-  opacity: 1;
+  color: #ffffff;
 }
 
-/* Animasi Progress Bar Epic Games */
+/* ============================================================
+   PROGRESS BAR — Epic Games Store Style:
+   A subtle lighter overlay that slides in from left → right
+   over the full duration of the slide, indicating time remaining.
+   ============================================================ */
 .hero-epic-progress {
   position: absolute;
   top: 0;
@@ -217,64 +285,96 @@
   width: 100%;
   background-color: rgba(255,255,255,0.08);
   z-index: 0;
-  transform-origin: left;
+  transform: translateX(-100%);
   animation-name: epicProgressFill;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
 
 @keyframes epicProgressFill {
-  0% {
-    transform: translate3d(-100%, 0, 0);
+  from {
+    transform: translateX(-100%);
   }
-  100% {
-    transform: translate3d(0, 0, 0);
+  to {
+    transform: translateX(0%);
   }
 }
 
-/* Skeleton Loading styles */
+/* Left border accent on active thumbnail (Epic Games has a thin white left border) */
+.hero-epic-thumbnail.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background-color: #ffffff;
+  z-index: 2;
+}
+
+/* Skeleton Loading */
 .skeleton-box {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
   background-size: 400% 100%;
   animation: skeletonPulse 1.5s ease-in-out infinite;
 }
 
 @keyframes skeletonPulse {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* Mobile Responsiveness */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 1024px) {
   .hero-epic-content {
     flex-direction: column;
     height: auto;
   }
-  
+
   .hero-epic-main {
     flex-basis: auto;
     height: 400px;
   }
-  
+
   .hero-epic-sidebar {
     flex-basis: auto;
     flex-direction: row;
     overflow-x: auto;
     padding-bottom: 8px;
     scrollbar-width: none;
+    gap: 6px;
   }
+
   .hero-epic-sidebar::-webkit-scrollbar {
     display: none;
   }
-  
+
   .hero-epic-thumbnail {
     height: 80px;
     min-width: 200px;
+    border-radius: 6px;
   }
-  
+
   .hero-thumbnail-img {
     height: 56px;
     width: 40px;
+  }
+
+  /* Left accent → top accent on horizontal layout */
+  .hero-epic-thumbnail.active::before {
+    left: 8px;
+    right: 8px;
+    top: 0;
+    bottom: auto;
+    width: auto;
+    height: 3px;
+    border-radius: 0 0 2px 2px;
   }
 }
 
@@ -282,8 +382,13 @@
   .hero-main-title {
     font-size: 1.5rem;
   }
+
   .hero-epic-container {
     padding: 20px 16px;
     min-height: auto;
+  }
+
+  .hero-main-overlay {
+    padding: 28px 24px;
   }
 }
