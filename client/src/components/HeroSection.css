@@ -24,16 +24,17 @@
   border-radius: 16px;
   overflow: hidden;
   position: relative;
-  background-color: #121212;
+  background-color: #0a0a0e;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* Background stage: semua slide di-stack, hanya yg aktif opacity 1 */
+/* ============================================================
+   SLIDE STAGE — clips slides during transition
+   ============================================================ */
 .hero-bg-stage {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  overflow: hidden; /* Critical: clips entering/exiting slides */
 }
 
 .hero-main-bg {
@@ -43,20 +44,40 @@
   height: 100%;
   background-size: cover;
   background-position: center;
-  opacity: 0;
-  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Slight zoom on enter for premium feel */
-  transform: scale(1.03);
-  transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.hero-main-bg.active {
-  opacity: 1;
-  transform: scale(1);
+/* First load — no animation, slide is just visible */
+.hero-main-bg.slide-initial {
+  transform: translateX(0);
 }
 
-/* Gradien overlay */
+/* ============================================================
+   SLIDE IN FROM RIGHT (new slide entering)
+   ============================================================ */
+@keyframes slideInFromRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0%);   }
+}
+
+.hero-main-bg.slide-enter {
+  animation: slideInFromRight 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ============================================================
+   SLIDE OUT TO LEFT (old slide exiting)
+   ============================================================ */
+@keyframes slideOutToLeft {
+  from { transform: translateX(0%);    }
+  to   { transform: translateX(-100%); }
+}
+
+.hero-main-bg.slide-exit {
+  animation: slideOutToLeft 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* ============================================================
+   OVERLAY GRADIENT
+   ============================================================ */
 .hero-main-overlay {
   position: absolute;
   inset: 0;
@@ -75,9 +96,7 @@
 }
 
 /* ============================================================
-   CONTENT ENTER ANIMATION — Mirror Epic Games Store behavior:
-   text block slides in from right (+80px) and fades in.
-   Logo has a separate, delayed slide-in.
+   CONTENT ANIMATIONS — text/logo slide in from right on change
    ============================================================ */
 .hero-main-info {
   max-width: 600px;
@@ -86,11 +105,10 @@
   gap: 12px;
 }
 
-/* Content block: slides up from 20px below + fade in */
 @keyframes heroContentEnter {
   from {
     opacity: 0;
-    transform: translateX(80px);
+    transform: translateX(60px);
   }
   to {
     opacity: 1;
@@ -98,11 +116,10 @@
   }
 }
 
-/* Logo: slides in from right with a bigger delay */
 @keyframes heroLogoEnter {
   from {
     opacity: 0;
-    transform: translateX(80px);
+    transform: translateX(60px);
   }
   to {
     opacity: 1;
@@ -111,13 +128,16 @@
 }
 
 .hero-content-enter {
-  animation: heroContentEnter 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation: heroContentEnter 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both;
 }
 
 .hero-logo-enter {
-  animation: heroLogoEnter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.12s both;
+  animation: heroLogoEnter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.22s both;
 }
 
+/* ============================================================
+   CONTENT ELEMENTS
+   ============================================================ */
 .hero-badge-epic {
   font-size: 0.75rem;
   font-weight: 700;
@@ -203,7 +223,9 @@
   text-transform: uppercase;
 }
 
-/* === THUMBNAIL SIDEBAR (KANAN) === */
+/* ============================================================
+   THUMBNAIL SIDEBAR (KANAN)
+   ============================================================ */
 .hero-epic-sidebar {
   flex-basis: 256px;
   flex-shrink: 0;
@@ -229,9 +251,21 @@
   background-color: rgba(255,255,255,0.05);
 }
 
-/* Active thumbnail — slightly elevated background, like Epic Games */
 .hero-epic-thumbnail.active {
   background-color: rgb(40, 40, 44);
+}
+
+/* Left border accent — white line on active, just like Epic Games */
+.hero-epic-thumbnail.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background-color: #ffffff;
+  z-index: 2;
 }
 
 .hero-epic-thumbnail-content {
@@ -264,18 +298,13 @@
   line-height: 1.3;
 }
 
-.hero-epic-thumbnail:hover .hero-thumbnail-title {
-  color: rgba(255,255,255,0.9);
-}
-
+.hero-epic-thumbnail:hover .hero-thumbnail-title,
 .hero-epic-thumbnail.active .hero-thumbnail-title {
   color: #ffffff;
 }
 
 /* ============================================================
-   PROGRESS BAR — Epic Games Store Style:
-   A subtle lighter overlay that slides in from left → right
-   over the full duration of the slide, indicating time remaining.
+   PROGRESS BAR — fills left→right over slide duration
    ============================================================ */
 .hero-epic-progress {
   position: absolute;
@@ -292,28 +321,13 @@
 }
 
 @keyframes epicProgressFill {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0%);
-  }
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0%);    }
 }
 
-/* Left border accent on active thumbnail (Epic Games has a thin white left border) */
-.hero-epic-thumbnail.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
-  border-radius: 0 2px 2px 0;
-  background-color: #ffffff;
-  z-index: 2;
-}
-
-/* Skeleton Loading */
+/* ============================================================
+   SKELETON LOADING
+   ============================================================ */
 .skeleton-box {
   background: linear-gradient(
     90deg,
@@ -327,10 +341,12 @@
 
 @keyframes skeletonPulse {
   0%   { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  100% { background-position: 0% 50%;   }
 }
 
-/* ===== RESPONSIVE ===== */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 1024px) {
   .hero-epic-content {
     flex-direction: column;
@@ -351,9 +367,7 @@
     gap: 6px;
   }
 
-  .hero-epic-sidebar::-webkit-scrollbar {
-    display: none;
-  }
+  .hero-epic-sidebar::-webkit-scrollbar { display: none; }
 
   .hero-epic-thumbnail {
     height: 80px;
@@ -366,7 +380,7 @@
     width: 40px;
   }
 
-  /* Left accent → top accent on horizontal layout */
+  /* Horizontal layout: top border accent instead of left */
   .hero-epic-thumbnail.active::before {
     left: 8px;
     right: 8px;

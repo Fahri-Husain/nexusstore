@@ -7,8 +7,9 @@ export default function HeroSection() {
   const [games, setGames] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [prevIndex, setPrevIndex] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isInitial, setIsInitial] = useState(true);
   const [animKey, setAnimKey] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const timerRef = useRef(null);
 
   const SLIDE_DURATION = 7000;
@@ -23,10 +24,7 @@ export default function HeroSection() {
           .eq('is_carousel', true)
           .order('createddate', { ascending: false })
           .limit(8);
-
-        if (data && data.length > 0) {
-          setGames(data);
-        }
+        if (data && data.length > 0) setGames(data);
       } catch (err) {
         console.error('Failed to fetch games for hero:', err);
       } finally {
@@ -41,18 +39,18 @@ export default function HeroSection() {
     if (games.length <= 1) return;
     timerRef.current = setInterval(() => {
       setCurrentIndex(prev => {
+        const next = (prev + 1) % games.length;
         setPrevIndex(prev);
-        return (prev + 1) % games.length;
+        return next;
       });
       setAnimKey(k => k + 1);
+      setIsInitial(false);
     }, SLIDE_DURATION);
   };
 
   useEffect(() => {
     startTimer();
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [games.length, currentIndex]);
 
   const handleThumbnailClick = (index) => {
@@ -60,6 +58,7 @@ export default function HeroSection() {
     setPrevIndex(currentIndex);
     setCurrentIndex(index);
     setAnimKey(k => k + 1);
+    setIsInitial(false);
   };
 
   if (isLoading) {
@@ -98,20 +97,31 @@ export default function HeroSection() {
         {/* === MAIN DISPLAY (KIRI) === */}
         <div className="hero-epic-main">
 
-          {/* Background images - crossfade via CSS opacity */}
+          {/* Background slide stage — overflow:hidden clips slides */}
           <div className="hero-bg-stage">
-            {games.map((game, index) => (
+            {/* Slide EXITING — animates out to left */}
+            {prevIndex !== null && games[prevIndex] && (
               <div
-                key={game.game_id}
-                className={`hero-main-bg ${index === currentIndex ? 'active' : ''}`}
-                style={{ backgroundImage: `url(${game.hero_image_url || game.image_url})` }}
+                key={`exit-${animKey}`}
+                className="hero-main-bg slide-exit"
+                style={{
+                  backgroundImage: `url(${games[prevIndex].hero_image_url || games[prevIndex].image_url})`
+                }}
               />
-            ))}
+            )}
+            {/* Slide ENTERING — animates in from right (or just shows if initial) */}
+            <div
+              key={`enter-${animKey}`}
+              className={`hero-main-bg ${isInitial ? 'slide-initial' : 'slide-enter'}`}
+              style={{
+                backgroundImage: `url(${activeGame.hero_image_url || activeGame.image_url})`
+              }}
+            />
           </div>
 
-          {/* Overlay gradient */}
+          {/* Gradient overlay */}
           <div className="hero-main-overlay">
-            {/* Content layer - animates in/out with CSS classes keyed to animKey */}
+            {/* Content block re-mounts per animKey to restart CSS animation */}
             <div key={`content-${animKey}`} className="hero-main-info hero-content-enter">
               <div className="hero-badge-epic">BARU RILIS</div>
 
@@ -122,9 +132,7 @@ export default function HeroSection() {
                   className="hero-main-logo hero-logo-enter"
                 />
               ) : (
-                <h2 className="hero-main-title">
-                  {activeGame.title}
-                </h2>
+                <h2 className="hero-main-title">{activeGame.title}</h2>
               )}
 
               <p className="hero-main-desc">
@@ -136,8 +144,12 @@ export default function HeroSection() {
                   <>
                     <span className="hero-discount-badge">-{activeGame.discount}%</span>
                     <div className="hero-price-stack">
-                      <span className="hero-price-original">Rp {activeGame.price.toLocaleString('id-ID')}</span>
-                      <span className="hero-price-final">Rp {(activeGame.price - (activeGame.price * activeGame.discount / 100)).toLocaleString('id-ID')}</span>
+                      <span className="hero-price-original">
+                        Rp {activeGame.price.toLocaleString('id-ID')}
+                      </span>
+                      <span className="hero-price-final">
+                        Rp {(activeGame.price - (activeGame.price * activeGame.discount / 100)).toLocaleString('id-ID')}
+                      </span>
                     </div>
                   </>
                 ) : (
@@ -164,7 +176,6 @@ export default function HeroSection() {
                 className={`hero-epic-thumbnail ${isActive ? 'active' : ''}`}
                 onClick={() => handleThumbnailClick(index)}
               >
-                {/* Progress fill layer - only on active */}
                 {isActive && (
                   <div
                     key={`progress-${animKey}`}
@@ -172,8 +183,6 @@ export default function HeroSection() {
                     style={{ animationDuration: `${SLIDE_DURATION}ms` }}
                   />
                 )}
-
-                {/* Content */}
                 <div className="hero-epic-thumbnail-content">
                   <img src={game.image_url} alt={game.title} className="hero-thumbnail-img" />
                   <span className="hero-thumbnail-title">{game.title}</span>
