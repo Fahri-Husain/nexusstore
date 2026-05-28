@@ -1,0 +1,139 @@
+.invoice-page {
+  padding-top: 100px;
+  padding-bottom: 60px;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.invoice-wrapper {
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.invoice-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.invoice-download-btns {
+  display: flex;
+  gap: 12px;
+}
+
+.invoice-document {
+  background: white;
+  color: #1a1a2e;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.invoice-logo h2 {
+  margin: 0;
+  font-size: 28px;
+  color: #3A86FF;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.invoice-logo p {
+  margin: 5px 0 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.invoice-info {
+  text-align: right;
+}
+
+.invoice-info h1 {
+  margin: 0 0 10px;
+  font-size: 36px;
+  color: #333;
+}
+
+.invoice-info p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+}
+
+.invoice-table th, .invoice-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.invoice-table th {
+  background-color: #f8f9fa;
+  color: #333;
+  font-weight: 600;
+}
+
+.invoice-table td {
+  color: #444;
+}
+
+.invoice-table th:last-child,
+.invoice-table td:last-child {
+  text-align: right;
+}
+
+.invoice-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.invoice-total {
+  width: 300px;
+  border-top: 2px solid #eee;
+  padding-top: 15px;
+  margin-bottom: 20px;
+}
+
+.invoice-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #555;
+}
+
+.invoice-grand-total {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin-top: 10px;
+  border-top: 1px dashed #ccc;
+  padding-top: 10px;
+}
+
+.invoice-thankyou {
+  width: 100%;
+  text-align: center;
+  color: #888;
+  font-size: 14px;
+  margin-top: 40px;
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}

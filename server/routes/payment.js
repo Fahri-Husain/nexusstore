@@ -264,7 +264,7 @@ router.post('/notification', async (req, res) => {
     // Check current order status
     const { data: currentOrder } = await supabase.from('orders').select('status').eq('order_code', orderId).single();
     if (!currentOrder || currentOrder.status === orderStatus) {
-       return res.status(200).json({ status: 'ok' });
+      return res.status(200).json({ status: 'ok' });
     }
 
     // Update order status in database

@@ -266,6 +266,16 @@ export default function OrderHistory() {
                         </button>
                       </div>
                     )}
+                    {order.status === 2 && (
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <Link 
+                          to={`/invoice/${order.order_code}`} 
+                          className="btn btn-primary btn-sm"
+                        >
+                          Lihat Invoice
+                        </Link>
+                      </div>
+                    )}
                   </div>
                   <div className="order-total">
                     Total: <strong>{formatPrice(order.total_amount)}</strong>

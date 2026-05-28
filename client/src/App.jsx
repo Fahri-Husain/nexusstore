@@ -16,6 +16,7 @@ import Checkout from './pages/Checkout';
 import Profile from './pages/Profile';
 import Library from './pages/Library';
 import OrderHistory from './pages/OrderHistory';
+import Invoice from './pages/Invoice';
 import PaymentStatus from './pages/PaymentStatus';
 import AdminPanel from './pages/AdminPanel';
 import Support from './pages/Support';
@@ -126,6 +127,9 @@ function App() {
             } />
             <Route path="/orders" element={
               <ProtectedRoute><PageTransition><OrderHistory /></PageTransition></ProtectedRoute>
+            } />
+            <Route path="/invoice/:orderCode" element={
+              <ProtectedRoute><PageTransition><Invoice /></PageTransition></ProtectedRoute>
             } />
             <Route path="/payment/:status" element={<PageTransition><PaymentStatus /></PageTransition>} />
             <Route path="/admin" element={
