@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { HiOutlineDownload, HiOutlineArrowLeft, HiLightningBolt } from 'react-icons/hi';
+import { useAuth } from '../context/AuthContext';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import './Invoice.css';
@@ -9,6 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api' :
 
 export default function Invoice() {
   const { orderCode } = useParams();
+  const { user, profile } = useAuth();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -88,7 +90,7 @@ export default function Invoice() {
           <div className="invoice-header">
             <div className="invoice-logo">
                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                 <HiLightningBolt style={{ color: '#3A86FF' }} />
+                 <HiLightningBolt style={{ color: '#000' }} />
                  NEXUS STORE
                </h2>
                <p>Game Library & Store</p>
@@ -97,6 +99,8 @@ export default function Invoice() {
               <h1>INVOICE</h1>
               <p><strong>Order ID:</strong> {order.order_code}</p>
               <p><strong>Tanggal:</strong> {new Date(order.createddate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+              <p><strong>Pembeli:</strong> {profile?.full_name || user?.email?.split('@')[0] || 'Pelanggan'}</p>
+              <p><strong>Metode:</strong> {order.payment_method ? order.payment_method.toUpperCase() : 'Menunggu'}</p>
               <p><strong>Status:</strong> {order.status === 2 ? 'LUNAS' : 'BELUM LUNAS'}</p>
             </div>
           </div>
