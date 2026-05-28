@@ -286,4 +286,46 @@ Untuk GoPay, BCA VA, dll — gunakan simulator yang tersedia di Midtrans Sandbox
 
 ---
 
+## 📖 Manual Book (User Guide)
+
+Berikut adalah panduan penggunaan aplikasi Nexus Store dari sudut pandang pengguna (Customer):
+
+### 1. Pendaftaran dan Login
+- Buka halaman utama website.
+- Klik tombol **MASUK** di sudut kanan atas.
+- Jika belum memiliki akun, pilih tab **Daftar** dan isi formulir pendaftaran (Nama Lengkap, Email, Password), atau langsung klik **Lanjutkan dengan Google** untuk proses yang lebih instan.
+
+### 2. Menjelajahi Katalog Game
+- Di halaman utama (**Beranda**), Anda akan disambut dengan banner promosi dan game-game rekomendasi.
+- Untuk melihat seluruh katalog, navigasi ke menu **Koleksi** di bagian atas.
+- Di halaman Koleksi, Anda dapat memfilter game berdasarkan kategori genre (Action, RPG, Strategy, dll) dan melakukan pencarian langsung menggunakan kotak pencarian.
+- Klik judul atau *cover* game untuk masuk ke halaman **Detail Game**, di mana Anda bisa melihat informasi lengkap, rating, dan screenshot game tersebut.
+
+### 3. Keranjang dan Checkout
+- Pada halaman Detail Game, klik tombol **Masukkan Keranjang**.
+- Akses keranjang Anda dengan mengklik ikon 🛒 di sudut kanan atas.
+- Di halaman Keranjang, Anda bisa memeriksa daftar belanjaan, melihat subtotal harga, serta menghapus game jika Anda berubah pikiran.
+- Klik **Lanjutkan ke Pembayaran** untuk masuk ke halaman Checkout.
+- Di halaman Checkout, jika Anda memiliki kode voucher, masukkan di kolom yang tersedia lalu klik "Terapkan" untuk mendapatkan potongan harga. Klik tombol **Bayar** untuk melanjutkan.
+
+### 4. Proses Pembayaran
+- Setelah mengklik tombol Bayar, *popup* gateway pembayaran **Midtrans** akan muncul.
+- Pilih metode pembayaran yang Anda inginkan (GoPay, Transfer Bank / Virtual Account, QRIS, Kartu Kredit, dll).
+- Ikuti instruksi pembayaran yang tertera di layar.
+- Setelah pembayaran diverifikasi, pesanan Anda akan langsung diproses.
+
+### 5. Mengelola Pesanan & Mencetak Invoice
+- Untuk melacak pesanan, klik foto profil Anda di kanan atas, lalu pilih menu **Pesanan**.
+- Anda dapat melihat status transaksi Anda di sini (Menunggu, Berhasil, Dibatalkan, atau Kadaluarsa).
+- Jika status pesanan masih "Menunggu Pembayaran", Anda bisa mengklik **Lanjutkan Pembayaran**.
+- Jika pesanan sudah "Berhasil", akan muncul tombol **Lihat Invoice**.
+- Di halaman Invoice, Anda bisa meninjau detail transaksi, diskon, metode pembayaran, serta mengunduh tanda terima resmi dengan mengklik **Unduh PDF** atau **Unduh JPG**.
+
+### 6. Perpustakaan Game (Library)
+- Seluruh game yang pembayarannya telah berhasil (Lunas) akan secara otomatis masuk ke **Perpustakaan**.
+- Akses dengan mengklik foto profil Anda dan pilih menu **Perpustakaan**.
+- Di sini Anda dapat melihat koleksi game digital yang telah Anda miliki sepenuhnya.
+
+---
+
 Dibuat dengan ❤️ oleh Nexus Store Team
