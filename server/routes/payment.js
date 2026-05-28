@@ -307,7 +307,7 @@ router.get('/status/:orderCode', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('orders')
-      .select('*')
+      .select('*, order_items(*, games(title, image_url))')
       .eq('order_code', req.params.orderCode)
       .single();
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { HiOutlineDownload, HiOutlineArrowLeft } from 'react-icons/hi';
+import { HiOutlineDownload, HiOutlineArrowLeft, HiLightningBolt } from 'react-icons/hi';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import './Invoice.css';
@@ -87,7 +87,10 @@ export default function Invoice() {
         <div className="invoice-document" ref={invoiceRef}>
           <div className="invoice-header">
             <div className="invoice-logo">
-               <h2>NEXUS STORE</h2>
+               <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                 <HiLightningBolt style={{ color: '#3A86FF' }} />
+                 NEXUS STORE
+               </h2>
                <p>Game Library & Store</p>
             </div>
             <div className="invoice-info">
