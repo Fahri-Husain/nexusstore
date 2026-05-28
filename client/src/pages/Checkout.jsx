@@ -148,15 +148,18 @@ export default function Checkout() {
           },
           onPending: function (result) {
             toast('Silakan selesaikan pembayaran Anda.', { icon: '⏳' });
+            localStorage.removeItem('pending_order');
             clearCart();
             navigate('/orders', { replace: true });
           },
           onError: function (result) {
             toast.error('Pembayaran gagal');
+            localStorage.removeItem('pending_order');
             setLoading(false);
           },
           onClose: function () {
             toast('Pembayaran belum selesai. Anda bisa melanjutkannya nanti.', { icon: 'ℹ️' });
+            localStorage.removeItem('pending_order');
             setLoading(false);
           }
         });

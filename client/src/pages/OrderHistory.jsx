@@ -127,10 +127,12 @@ export default function OrderHistory() {
         },
         onPending: function (result) {
           toast('Silakan selesaikan pembayaran Anda.', { icon: '⏳' });
+          localStorage.removeItem('pending_order');
           fetchOrders();
         },
         onError: function (result) {
           toast.error('Pembayaran gagal');
+          localStorage.removeItem('pending_order');
           fetchOrders();
         },
         onClose: function () {
