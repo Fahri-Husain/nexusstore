@@ -315,7 +315,7 @@ Berikut adalah panduan penggunaan aplikasi Nexus Store dari sudut pandang penggu
 - Setelah pembayaran diverifikasi, pesanan Anda akan langsung diproses.
 
 ### 5. Mengelola Pesanan & Mencetak Invoice
-- Untuk melacak pesanan, klik foto profil Anda di kanan atas, lalu pilih menu **Pesanan**.
+- Untuk melihat pesanan, klik foto profil Anda di kanan atas, lalu pilih menu **Pesanan**.
 - Anda dapat melihat status transaksi Anda di sini (Menunggu, Berhasil, Dibatalkan, atau Kadaluarsa).
 - Jika status pesanan masih "Menunggu Pembayaran", Anda bisa mengklik **Lanjutkan Pembayaran**.
 - Jika pesanan sudah "Berhasil", akan muncul tombol **Lihat Invoice**.
