@@ -478,17 +478,35 @@ export default function AdminPanel() {
       </tr>`).join('');
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
       <title>Orders Report — Nexus Store</title>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        body { font-family: sans-serif; font-size: 12px; color: #111; }
-        h2 { margin-bottom: 8px; }
-        p { color: #666; margin-bottom: 16px; font-size: 11px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 7px 10px; text-align: left; }
-        th { background: #f5f5f5; font-weight: 600; }
-        tr:nth-child(even) td { background: #fafafa; }
+        body { font-family: 'Inter', sans-serif; font-size: 12px; color: #333; margin: 0; padding: 40px; background-color: #fff; }
+        .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #D4A853; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .logo-icon { width: 40px; height: 40px; color: #D4A853; }
+        .store-name { font-family: 'Playfair Display', serif; font-size: 32px; color: #111; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+        .report-title { font-size: 16px; font-weight: 600; color: #555; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 2px; }
+        .print-meta { color: #888; font-size: 11px; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border-bottom: 1px solid #eee; padding: 12px 10px; text-align: left; }
+        th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        tr:nth-child(even) td { background: #fdfdfd; }
+        tr:last-child td { border-bottom: 2px solid #eee; }
       </style></head><body>
-      <h2>Laporan Orders — Nexus Store</h2>
-      <p>Dicetak: ${new Date().toLocaleString('id-ID')} | Total: ${filteredOrders.length} pesanan</p>
+      
+      <div class="header">
+        <div class="logo-container">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          <h1 class="store-name">Nexus Store</h1>
+        </div>
+        <div class="report-title">Laporan Orders</div>
+        <p class="print-meta">Dicetak: ${new Date().toLocaleString('id-ID')} &nbsp;|&nbsp; Total: ${filteredOrders.length} pesanan</p>
+      </div>
+
       <table><thead><tr>
         <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
       </tr></thead><tbody>${printRows}</tbody></table>
@@ -763,32 +781,55 @@ export default function AdminPanel() {
       </tr>`).join('');
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
       <title>Laporan Penjualan — Nexus Store</title>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        body { font-family: sans-serif; font-size: 12px; color: #111; }
-        h2 { margin-bottom: 8px; }
-        p { color: #666; margin-bottom: 16px; font-size: 11px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 7px 10px; text-align: left; }
-        th { background: #f5f5f5; font-weight: 600; }
-        tr:nth-child(even) td { background: #fafafa; }
-        .summary { display: flex; gap: 20px; margin-bottom: 20px; }
-        .summary-box { border: 1px solid #ddd; padding: 15px; border-radius: 4px; flex: 1; }
+        body { font-family: 'Inter', sans-serif; font-size: 12px; color: #333; margin: 0; padding: 40px; background-color: #fff; }
+        .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #D4A853; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .logo-icon { width: 40px; height: 40px; color: #D4A853; }
+        .store-name { font-family: 'Playfair Display', serif; font-size: 32px; color: #111; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
+        .report-title { font-size: 16px; font-weight: 600; color: #555; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 2px; }
+        .print-meta { color: #888; font-size: 11px; margin: 0; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 30px; }
+        th, td { border-bottom: 1px solid #eee; padding: 12px 10px; text-align: left; }
+        th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        tr:nth-child(even) td { background: #fdfdfd; }
+        tr:last-child td { border-bottom: 2px solid #eee; }
+        
+        .summary { display: flex; gap: 20px; margin-bottom: 30px; }
+        .summary-box { background: #fafafa; border: 1px solid #eaeaea; padding: 20px; border-radius: 8px; flex: 1; text-align: center; }
+        .summary-box strong { color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px; }
+        .summary-box span { font-size: 20px; font-weight: 600; color: #111; }
+        .summary-box .highlight { color: #D4A853; font-size: 24px; }
+        h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: #111; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
       </style></head><body>
-      <h2>Laporan Penjualan — Nexus Store</h2>
-      <p>Dicetak: ${new Date().toLocaleString('id-ID')}</p>
+      
+      <div class="header">
+        <div class="logo-container">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+          <h1 class="store-name">Nexus Store</h1>
+        </div>
+        <div class="report-title">Laporan Penjualan</div>
+        <p class="print-meta">Dicetak: ${new Date().toLocaleString('id-ID')}</p>
+      </div>
       
       <div class="summary">
         <div class="summary-box">
-          <strong>Total Pendapatan:</strong><br/>
-          <span style="font-size: 16px; color: #D4A853;">${formatPrice(totalRevenue)}</span>
+          <strong>Total Pendapatan</strong>
+          <span class="highlight">${formatPrice(totalRevenue)}</span>
         </div>
         <div class="summary-box">
-          <strong>Order Berhasil:</strong><br/>
-          <span style="font-size: 16px;">${successOrders}</span>
+          <strong>Order Berhasil</strong>
+          <span>${successOrders} pesanan</span>
         </div>
         <div class="summary-box">
-          <strong>Total Item Terjual:</strong><br/>
-          <span style="font-size: 16px;">${totalItems}</span>
+          <strong>Total Item Terjual</strong>
+          <span>${totalItems} unit</span>
         </div>
       </div>
 
