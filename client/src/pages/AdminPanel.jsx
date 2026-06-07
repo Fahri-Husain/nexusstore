@@ -480,7 +480,7 @@ export default function AdminPanel() {
       <title>Orders Report — Nexus Store</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 0; }
+        @page { margin: 0 !important; }
         body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; padding: 20mm; background-color: #fff; }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
@@ -782,7 +782,7 @@ export default function AdminPanel() {
       <title>Laporan Penjualan — Nexus Store</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 0; }
+        @page { margin: 0 !important; }
         body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; padding: 20mm; background-color: #fff; }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
