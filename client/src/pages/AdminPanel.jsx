@@ -480,8 +480,10 @@ export default function AdminPanel() {
       <title>Orders Report — Nexus Store</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 0 !important; }
-        body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; padding: 20mm; background-color: #fff; }
+        @page { margin: 15mm 15mm 20mm 15mm !important; }
+        body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; background-color: #fff; padding-bottom: 20px; }
+        .print-footer { position: fixed; bottom: -10mm; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: #555; border-top: 1px solid #eee; padding-top: 8px; }
+        .page-number::after { counter-increment: page; content: counter(page); }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
         .logo-icon { width: 40px; height: 40px; color: #111; }
@@ -509,6 +511,11 @@ export default function AdminPanel() {
       <table><thead><tr>
         <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
       </tr></thead><tbody>${printRows}</tbody></table>
+      
+      <div class="print-footer">
+        <span>Nexus Store - Laporan Orders</span>
+        <span class="page-number"></span>
+      </div>
       </body></html>`;
     const w = window.open('', '_blank');
     w.document.write(html);
@@ -782,8 +789,10 @@ export default function AdminPanel() {
       <title>Laporan Penjualan — Nexus Store</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 0 !important; }
-        body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; padding: 20mm; background-color: #fff; }
+        @page { margin: 15mm 15mm 20mm 15mm !important; }
+        body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; background-color: #fff; padding-bottom: 20px; }
+        .print-footer { position: fixed; bottom: -10mm; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: #555; border-top: 1px solid #eee; padding-top: 8px; }
+        .page-number::after { counter-increment: page; content: counter(page); }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
         .logo-icon { width: 40px; height: 40px; color: #111; }
@@ -835,6 +844,11 @@ export default function AdminPanel() {
       <table><thead><tr>
         <th>Rank</th><th>Game</th><th>Qty Terjual</th><th>Total Pendapatan</th>
       </tr></thead><tbody>${printRows}</tbody></table>
+      
+      <div class="print-footer">
+        <span>Nexus Store - Laporan Penjualan</span>
+        <span class="page-number"></span>
+      </div>
       </body></html>`;
     const w = window.open('', '_blank');
     w.document.write(html);
