@@ -465,6 +465,41 @@ export default function AdminPanel() {
     toast.success(`${filteredOrders.length} order diekspor ke Excel/CSV`);
   };
 
+  // Helper function for printing without popup and about:blank
+  const printHtml = (htmlContent, title, urlPath) => {
+    const originalTitle = document.title;
+    const originalUrl = window.location.href;
+    
+    const printContainer = document.createElement('div');
+    printContainer.id = 'print-container';
+    printContainer.innerHTML = htmlContent;
+    document.body.appendChild(printContainer);
+    
+    const style = document.createElement('style');
+    style.id = 'print-style';
+    style.textContent = `
+      @media print {
+        body > :not(#print-container) { display: none !important; }
+        #print-container { display: block !important; }
+        @page { margin: 15mm; }
+      }
+      @media screen {
+        #print-container { display: none !important; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    document.title = title || '\u200B';
+    try { window.history.replaceState(null, '', '/' + urlPath); } catch (e) {}
+    
+    window.print();
+    
+    document.title = originalTitle;
+    try { window.history.replaceState(null, '', originalUrl); } catch (e) {}
+    document.body.removeChild(printContainer);
+    document.head.removeChild(style);
+  };
+
   // ── Export PDF (print) ───────────────────────────
   const exportPDF = () => {
     const printRows = filteredOrders.map(o => `
@@ -477,24 +512,22 @@ export default function AdminPanel() {
         <td>${o.payment_method || '-'}</td>
       </tr>`).join('');
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
-      <title>Orders Report — Nexus Store</title>
+      <title>Laporan Orders</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 25mm 20mm 25mm 20mm !important; }
         body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; background-color: #fff; padding-bottom: 20px; }
-        tr { page-break-inside: avoid; }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
         .logo-icon { width: 40px; height: 40px; color: #111; }
         .store-name { font-family: 'Playfair Display', serif; font-size: 32px; color: #111; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
         .report-title { font-size: 16px; font-weight: 600; color: #111; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 2px; }
         .print-meta { color: #555; font-size: 11px; margin: 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
-        th, td { border-bottom: 1px solid #eee; padding: 16px 10px; text-align: left; }
-        th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-        tr:nth-child(even) td { background: #fdfdfd; }
-        tr:last-child td { border-bottom: 2px solid #eee; }
-      </style></head><body>
+        table.data-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; margin-bottom: 20px; }
+        table.data-table th, table.data-table td { border-bottom: 1px solid #eee; padding: 16px 10px; text-align: left; }
+        table.data-table th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-top: 1px solid #eee; }
+        table.data-table tr.item-row { page-break-inside: avoid; }
+        table.data-table tr:nth-child(even) td { background: #fdfdfd; }
+      </style>
       
       <div class="header">
         <div class="logo-container">
@@ -507,17 +540,14 @@ export default function AdminPanel() {
         <p class="print-meta">Dicetak: ${new Date().toLocaleString('id-ID')} &nbsp;|&nbsp; Total: ${filteredOrders.length} pesanan</p>
       </div>
 
-      <table><thead><tr>
-        <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
-      </tr></thead><tbody>${printRows}</tbody></table>
-      </body></html>`;
-    const w = window.open('', '_blank');
-    w.document.write(html);
-    w.document.close();
-    w.document.title = '\u200B';
-    try { w.history.replaceState(null, '', '/Nexus-Store-Laporan-Orders'); } catch (e) {}
-    w.focus();
-    setTimeout(() => { w.print(); w.close(); }, 500);
+      <table class="data-table">
+        <thead><tr>
+          <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
+        </tr></thead>
+        <tbody>${printRows}</tbody>
+      </table>`;
+      
+    printHtml(html, '\u200B', 'Nexus-Store-Laporan-Orders');
   };
 
   const resetFilters = () => {
@@ -782,24 +812,21 @@ export default function AdminPanel() {
         <td>${formatPrice(g.revenue)}</td>
       </tr>`).join('');
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
-      <title>Laporan Penjualan — Nexus Store</title>
+      <title>Laporan Penjualan</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 25mm 20mm 25mm 20mm !important; }
         body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; background-color: #fff; padding-bottom: 20px; }
-        tr { page-break-inside: avoid; }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
         .logo-icon { width: 40px; height: 40px; color: #111; }
         .store-name { font-family: 'Playfair Display', serif; font-size: 32px; color: #111; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
         .report-title { font-size: 16px; font-weight: 600; color: #111; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 2px; }
         .print-meta { color: #555; font-size: 11px; margin: 0; }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 30px; }
-        th, td { border-bottom: 1px solid #eee; padding: 16px 10px; text-align: left; }
-        th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
-        tr:nth-child(even) td { background: #fdfdfd; }
-        tr:last-child td { border-bottom: 2px solid #eee; }
+        table.data-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; margin-bottom: 30px; }
+        table.data-table th, table.data-table td { border-bottom: 1px solid #eee; padding: 16px 10px; text-align: left; }
+        table.data-table th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-top: 1px solid #eee; }
+        table.data-table tr.item-row { page-break-inside: avoid; }
+        table.data-table tr:nth-child(even) td { background: #fdfdfd; }
         
         .summary { display: flex; gap: 20px; margin-bottom: 30px; }
         .summary-box { background: #fafafa; border: 1px solid #eaeaea; padding: 20px; border-radius: 8px; flex: 1; text-align: center; }
@@ -807,7 +834,7 @@ export default function AdminPanel() {
         .summary-box span { font-size: 20px; font-weight: 600; color: #111; }
         .summary-box .highlight { color: #111; font-size: 24px; }
         h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: #111; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-      </style></head><body>
+      </style>
       
       <div class="header">
         <div class="logo-container">
@@ -836,17 +863,11 @@ export default function AdminPanel() {
       </div>
 
       <h3>Game Terlaris (Top ${topGames.length})</h3>
-      <table><thead><tr>
+      <table class="data-table"><thead><tr>
         <th>Rank</th><th>Game</th><th>Qty Terjual</th><th>Total Pendapatan</th>
-      </tr></thead><tbody>${printRows}</tbody></table>
-      </body></html>`;
-    const w = window.open('', '_blank');
-    w.document.write(html);
-    w.document.close();
-    w.document.title = '\u200B';
-    try { w.history.replaceState(null, '', '/Nexus-Store-Laporan-Penjualan'); } catch (e) {}
-    w.focus();
-    setTimeout(() => { w.print(); w.close(); }, 500);
+      </tr></thead><tbody>${printRows}</tbody></table>`;
+      
+    printHtml(html, '\u200B', 'Nexus-Store-Laporan-Penjualan');
   };
 
   // ── Voucher CRUD handlers ─────────────────────────────
