@@ -480,9 +480,9 @@ export default function AdminPanel() {
       <title>Orders Report — Nexus Store</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 15mm 15mm 20mm 15mm !important; }
+        @page { margin: 25mm 20mm 25mm 20mm !important; }
         body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; background-color: #fff; padding-bottom: 20px; }
-        .print-footer { position: fixed; bottom: -10mm; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: #555; border-top: 1px solid #eee; padding-top: 8px; }
+        .print-footer { position: fixed; bottom: -15mm; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: #555; border-top: 1px solid #eee; padding-top: 10px; }
         .page-number::after { counter-increment: page; content: counter(page); }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
@@ -490,8 +490,8 @@ export default function AdminPanel() {
         .store-name { font-family: 'Playfair Display', serif; font-size: 32px; color: #111; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
         .report-title { font-size: 16px; font-weight: 600; color: #111; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 2px; }
         .print-meta { color: #555; font-size: 11px; margin: 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border-bottom: 1px solid #eee; padding: 12px 10px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+        th, td { border-bottom: 1px solid #eee; padding: 16px 10px; text-align: left; }
         th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
         tr:nth-child(even) td { background: #fdfdfd; }
         tr:last-child td { border-bottom: 2px solid #eee; }
@@ -789,9 +789,9 @@ export default function AdminPanel() {
       <title>Laporan Penjualan — Nexus Store</title>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
-        @page { margin: 15mm 15mm 20mm 15mm !important; }
+        @page { margin: 25mm 20mm 25mm 20mm !important; }
         body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; background-color: #fff; padding-bottom: 20px; }
-        .print-footer { position: fixed; bottom: -10mm; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: #555; border-top: 1px solid #eee; padding-top: 8px; }
+        .print-footer { position: fixed; bottom: -15mm; left: 0; right: 0; display: flex; justify-content: space-between; font-size: 10px; color: #555; border-top: 1px solid #eee; padding-top: 10px; }
         .page-number::after { counter-increment: page; content: counter(page); }
         .header { display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 30px; }
         .logo-container { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
@@ -801,7 +801,7 @@ export default function AdminPanel() {
         .print-meta { color: #555; font-size: 11px; margin: 0; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 30px; }
-        th, td { border-bottom: 1px solid #eee; padding: 12px 10px; text-align: left; }
+        th, td { border-bottom: 1px solid #eee; padding: 16px 10px; text-align: left; }
         th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
         tr:nth-child(even) td { background: #fdfdfd; }
         tr:last-child td { border-bottom: 2px solid #eee; }
