@@ -1,6 +1,8 @@
  import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import {
   HiOutlinePlus, HiOutlinePencil, HiOutlineTrash, HiOutlineX,
   HiOutlineShieldCheck, HiOutlineViewGrid, HiOutlineCollection,
@@ -32,6 +34,9 @@ export default function AdminPanel() {
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
   const [adminUser, setAdminUser] = useState('Admin');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+  const [pdfPreviewTitle, setPdfPreviewTitle] = useState('');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   // ── Voucher State ────────────────────────────────
   
@@ -465,39 +470,49 @@ export default function AdminPanel() {
     toast.success(`${filteredOrders.length} order diekspor ke Excel/CSV`);
   };
 
-  // Helper function for printing without popup and about:blank
-  const printHtml = (htmlContent, title, urlPath) => {
-    const originalTitle = document.title;
-    const originalUrl = window.location.href;
-    
-    const printContainer = document.createElement('div');
-    printContainer.id = 'print-container';
-    printContainer.innerHTML = htmlContent;
-    document.body.appendChild(printContainer);
-    
-    const style = document.createElement('style');
-    style.id = 'print-style';
-    style.textContent = `
-      @media print {
-        body > :not(#print-container) { display: none !important; }
-        #print-container { display: block !important; }
-        @page { margin: 15mm; }
-      }
-      @media screen {
-        #print-container { display: none !important; }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    document.title = title || '\u200B';
-    try { window.history.replaceState(null, '', '/' + urlPath); } catch (e) {}
-    
-    window.print();
-    
-    document.title = originalTitle;
-    try { window.history.replaceState(null, '', originalUrl); } catch (e) {}
-    document.body.removeChild(printContainer);
-    document.head.removeChild(style);
+  // Helper function for PDF generation
+  const generatePdfAndPreview = async (htmlContent, title) => {
+    if (isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+    const toastId = toast.loading('Membuat PDF...');
+    try {
+      const printContainer = document.createElement('div');
+      printContainer.innerHTML = htmlContent;
+      Object.assign(printContainer.style, {
+        position: 'absolute',
+        top: '-9999px',
+        left: '-9999px',
+        width: '210mm',
+        backgroundColor: '#fff',
+        padding: '15mm',
+        boxSizing: 'border-box'
+      });
+      document.body.appendChild(printContainer);
+
+      await new Promise(r => setTimeout(r, 500)); // wait for rendering
+
+      const canvas = await html2canvas(printContainer, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      
+      setPdfPreviewUrl(pdfUrl);
+      setPdfPreviewTitle(title);
+      
+      document.body.removeChild(printContainer);
+      toast.dismiss(toastId);
+    } catch (err) {
+      console.error(err);
+      toast.error('Gagal membuat PDF');
+      toast.dismiss(toastId);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   // ── Export PDF (print) ───────────────────────────
@@ -547,7 +562,7 @@ export default function AdminPanel() {
         <tbody>${printRows}</tbody>
       </table>`;
       
-    printHtml(html, '\u200B', 'Nexus-Store-Laporan-Orders');
+    generatePdfAndPreview(html, 'Laporan Orders');
   };
 
   const resetFilters = () => {
@@ -867,7 +882,7 @@ export default function AdminPanel() {
         <th>Rank</th><th>Game</th><th>Qty Terjual</th><th>Total Pendapatan</th>
       </tr></thead><tbody>${printRows}</tbody></table>`;
       
-    printHtml(html, '\u200B', 'Nexus-Store-Laporan-Penjualan');
+    generatePdfAndPreview(html, 'Laporan Penjualan');
   };
 
   // ── Voucher CRUD handlers ─────────────────────────────
@@ -2168,6 +2183,33 @@ export default function AdminPanel() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* ─── PDF PREVIEW MODAL ─── */}
+      {pdfPreviewUrl && (
+        <div className="modal-overlay" style={{ zIndex: 9999 }} onClick={() => { URL.revokeObjectURL(pdfPreviewUrl); setPdfPreviewUrl(null); }}>
+          <div className="modal-content animate-scaleIn" style={{ maxWidth: '80vw', width: '100%', height: '90vh', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden', background: '#111' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header" style={{ padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1.2rem', color: '#fff' }}>
+                <HiOutlineDocumentText style={{ color: 'var(--primary)' }} /> Preview {pdfPreviewTitle}
+              </h3>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <a href={pdfPreviewUrl} download={`${pdfPreviewTitle.replace(/\s+/g, '-')}.pdf`} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <HiOutlineDownload /> Download PDF
+                </a>
+                <button className="modal-close" onClick={() => { URL.revokeObjectURL(pdfPreviewUrl); setPdfPreviewUrl(null); }} style={{ position: 'static' }}>
+                  <HiOutlineX />
+                </button>
+              </div>
+            </div>
+            <div style={{ flex: 1, backgroundColor: '#222', padding: '20px' }}>
+              <iframe
+                src={pdfPreviewUrl}
+                style={{ width: '100%', height: '100%', border: 'none', borderRadius: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}
+                title="PDF Preview"
+              />
+            </div>
           </div>
         </div>
       )}
