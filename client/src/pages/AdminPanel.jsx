@@ -496,19 +496,38 @@ export default function AdminPanel() {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      let heightLeft = pdfHeight;
-      let position = 0;
+      const margin = 12; // 12mm margin
+      const contentWidth = pdfWidth - margin * 2;
+      const imgHeight = (canvas.height * contentWidth) / canvas.width;
+      const printHeight = pageHeight - margin * 2;
+      
+      let heightLeft = imgHeight;
+      let position = margin;
+      let pageNumber = 1;
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
+      const addFooter = (pageNo) => {
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, 0, pdfWidth, margin, 'F'); // cover top margin
+        pdf.rect(0, pageHeight - margin, pdfWidth, margin, 'F'); // cover bottom margin
+        
+        pdf.setFontSize(9);
+        pdf.setTextColor(100);
+        pdf.text(`${title} - Nexus Store`, margin, pageHeight - 6);
+        pdf.text(`Halaman ${pageNo}`, pdfWidth - margin - 20, pageHeight - 6);
+      };
+
+      pdf.addImage(imgData, 'PNG', margin, position, contentWidth, imgHeight);
+      addFooter(pageNumber);
+      heightLeft -= printHeight;
 
       while (heightLeft > 0) {
-        position -= pageHeight;
+        position -= printHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
+        pageNumber++;
+        pdf.addImage(imgData, 'PNG', margin, position, contentWidth, imgHeight);
+        addFooter(pageNumber);
+        heightLeft -= printHeight;
       }
       
       const pdfBlob = pdf.output('blob');
