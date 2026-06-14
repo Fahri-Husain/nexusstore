@@ -560,7 +560,13 @@ export default function AdminPanel() {
       return;
     }
 
-    for (let i = 0; i < filteredOrders.length; i += rowsPerPage) {
+    let i = 0;
+    let isFirstPage = true;
+
+    while (i < filteredOrders.length) {
+      // First page has a header, so fit fewer rows. Subsequent pages fit more.
+      const rowsPerPage = isFirstPage ? 14 : 20;
+      
       const chunk = filteredOrders.slice(i, i + rowsPerPage);
       const printRows = chunk.map(o => `
         <tr>
@@ -571,8 +577,6 @@ export default function AdminPanel() {
           <td>${(STATUS_MAP[o.status] || {}).label || 'Unknown'}</td>
           <td>${o.payment_method || '-'}</td>
         </tr>`).join('');
-      
-      const isFirstPage = i === 0;
       
       const headerContent = isFirstPage ? `
         <div class="header">
@@ -588,16 +592,19 @@ export default function AdminPanel() {
 
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
         <title>Laporan Orders</title>
-        ${styleBlock}
+        ${styleBlock}</head><body>
         ${headerContent}
         <table class="data-table">
           <thead><tr>
             <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
           </tr></thead>
           <tbody>${printRows}</tbody>
-        </table></html>`;
+        </table></body></html>`;
         
       pagesHtml.push(html);
+      
+      i += rowsPerPage;
+      isFirstPage = false;
     }
     
     generatePdfAndPreview(pagesHtml, 'Laporan Orders');
@@ -821,7 +828,6 @@ export default function AdminPanel() {
     name: month,
     Pendapatan: revenueByMonth[month],
   }));
-
   // Top selling games from order_items
   const gameSalesMap = {};
   successOrdersList.forEach(o => {
@@ -887,7 +893,7 @@ export default function AdminPanel() {
         .summary-box span { font-size: 20px; font-weight: 600; color: #111; }
         .summary-box .highlight { color: #111; font-size: 24px; }
         h3 { font-family: 'Playfair Display', serif; font-size: 20px; color: #111; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-      </style>
+      </style></head><body>
       
       <div class="header">
         <div class="logo-container">
@@ -918,7 +924,7 @@ export default function AdminPanel() {
       <h3>Game Terlaris (Top ${topGames.length})</h3>
       <table class="data-table"><thead><tr>
         <th>Rank</th><th>Game</th><th>Qty Terjual</th><th>Total Pendapatan</th>
-      </tr></thead><tbody>${printRows}</tbody></table></html>`;
+      </tr></thead><tbody>${printRows}</tbody></table></body></html>`;
       
     generatePdfAndPreview([html], 'Laporan Penjualan');
   };
