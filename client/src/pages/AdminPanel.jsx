@@ -471,56 +471,59 @@ export default function AdminPanel() {
   };
 
   // Helper function for PDF generation
-  const generatePdfAndPreview = async (htmlContent, title) => {
+  const generatePdfAndPreview = async (htmlPages, title) => {
     if (isGeneratingPdf) return;
     setIsGeneratingPdf(true);
     const toastId = toast.loading('Membuat PDF...');
     try {
-      const printContainer = document.createElement('div');
-      printContainer.innerHTML = htmlContent;
-      Object.assign(printContainer.style, {
-        position: 'absolute',
-        top: '-9999px',
-        left: '-9999px',
-        width: '210mm',
-        backgroundColor: '#fff',
-        padding: '15mm',
-        boxSizing: 'border-box'
-      });
-      document.body.appendChild(printContainer);
-
-      await new Promise(r => setTimeout(r, 500)); // wait for rendering
-
-      // We use pdf.html which supports CSS page-break-inside: avoid; to prevent row cutting
-      const pdf = new jsPDF('p', 'pt', 'a4'); 
+      const pages = Array.isArray(htmlPages) ? htmlPages : [htmlPages];
+      const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 12; 
+      const contentWidth = pdfWidth - margin * 2;
+
+      for (let i = 0; i < pages.length; i++) {
+        const printContainer = document.createElement('div');
+        printContainer.innerHTML = pages[i];
+        Object.assign(printContainer.style, {
+          position: 'absolute',
+          top: '-99999px',
+          left: '0px',
+          width: '800px',
+          backgroundColor: '#fff',
+        });
+        document.body.appendChild(printContainer);
+
+        await new Promise(r => setTimeout(r, 400)); // wait for fonts/rendering
+
+        const canvas = await html2canvas(printContainer, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+        const imgHeight = (canvas.height * contentWidth) / canvas.width;
+        
+        if (i > 0) pdf.addPage();
+        
+        pdf.addImage(imgData, 'PNG', margin, margin, contentWidth, imgHeight);
+        
+        // Add footer background
+        pdf.setFillColor(255, 255, 255);
+        pdf.rect(0, pageHeight - margin, pdfWidth, margin, 'F');
+        
+        // Add footer text
+        pdf.setFontSize(9);
+        pdf.setTextColor(100);
+        pdf.text(`${title} - Nexus Store`, margin, pageHeight - 6);
+        pdf.text(`${i + 1}/${pages.length}`, pdfWidth - margin - 15, pageHeight - 6);
+        
+        document.body.removeChild(printContainer);
+      }
+
+      const pdfBlob = pdf.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
       
-      const marginPt = 12 * 2.83465; // 12mm to pt
-      
-      await pdf.html(printContainer, {
-        margin: [marginPt, marginPt, marginPt + 20, marginPt], // top, right, bottom, left
-        autoPaging: 'text',
-        windowWidth: 800,
-        width: pdfWidth - marginPt * 2,
-        callback: function (doc) {
-          const totalPages = doc.internal.getNumberOfPages();
-          for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.setFontSize(9);
-            doc.setTextColor(100);
-            doc.text(`${title} - Nexus Store`, marginPt, pdfHeight - marginPt);
-            doc.text(`${i}/${totalPages}`, pdfWidth - marginPt - 20, pdfHeight - marginPt);
-          }
-          const pdfBlob = doc.output('blob');
-          const pdfUrl = URL.createObjectURL(pdfBlob);
-          setPdfPreviewUrl(pdfUrl);
-          setPdfPreviewTitle(title);
-          document.body.removeChild(printContainer);
-          toast.dismiss(toastId);
-          setIsGeneratingPdf(false);
-        }
-      });
+      setPdfPreviewUrl(pdfUrl);
+      setPdfPreviewTitle(title);
+      toast.dismiss(toastId);
     } catch (err) {
       console.error(err);
       toast.error('Gagal membuat PDF');
@@ -532,17 +535,10 @@ export default function AdminPanel() {
 
   // ── Export PDF (print) ───────────────────────────
   const exportPDF = () => {
-    const printRows = filteredOrders.map(o => `
-      <tr>
-        <td>${o.order_code || ''}</td>
-        <td>${o.createddate ? new Date(o.createddate).toLocaleDateString('id-ID') : ''}</td>
-        <td>${o.order_items?.length || 0} item</td>
-        <td>${formatPrice(o.total_amount)}</td>
-        <td>${(STATUS_MAP[o.status] || {}).label || 'Unknown'}</td>
-        <td>${o.payment_method || '-'}</td>
-      </tr>`).join('');
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
-      <title>Laporan Orders</title>
+    const rowsPerPage = 20;
+    const pagesHtml = [];
+    
+    const styleBlock = `
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
       <style>
         body { font-family: 'Inter', sans-serif; font-size: 12px; color: #111; margin: 0; background-color: #fff; padding-bottom: 20px; }
@@ -552,32 +548,59 @@ export default function AdminPanel() {
         .store-name { font-family: 'Playfair Display', serif; font-size: 32px; color: #111; margin: 0; letter-spacing: 2px; text-transform: uppercase; }
         .report-title { font-size: 16px; font-weight: 600; color: #111; margin: 10px 0 5px 0; text-transform: uppercase; letter-spacing: 2px; }
         .print-meta { color: #555; font-size: 11px; margin: 0; }
-        table.data-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 20px; margin-bottom: 20px; }
+        table.data-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 20px; }
         table.data-table th, table.data-table td { border-bottom: 1px solid #eee; padding: 16px 10px; text-align: left; }
         table.data-table th { background: #fafafa; font-weight: 600; color: #111; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; border-top: 1px solid #eee; }
-        table.data-table tr.item-row { page-break-inside: avoid; }
         table.data-table tr:nth-child(even) td { background: #fdfdfd; }
-      </style>
-      
-      <div class="header">
-        <div class="logo-container">
-          <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l1.992-7.302H3.75a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z" clip-rule="evenodd" />
-          </svg>
-          <h1 class="store-name">Nexus Store</h1>
-        </div>
-        <div class="report-title">Laporan Orders</div>
-        <p class="print-meta">Dicetak: ${new Date().toLocaleString('id-ID')} &nbsp;|&nbsp; Total: ${filteredOrders.length} pesanan</p>
-      </div>
+      </style>`;
 
-      <table class="data-table">
-        <thead><tr>
-          <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
-        </tr></thead>
-        <tbody>${printRows}</tbody>
-      </table>`;
+    if (filteredOrders.length === 0) {
+      pagesHtml.push(`<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Laporan Orders</title>${styleBlock}</head><body><div style="text-align:center; margin-top: 50px;">Tidak ada data</div></body></html>`);
+      generatePdfAndPreview(pagesHtml, 'Laporan Orders');
+      return;
+    }
+
+    for (let i = 0; i < filteredOrders.length; i += rowsPerPage) {
+      const chunk = filteredOrders.slice(i, i + rowsPerPage);
+      const printRows = chunk.map(o => `
+        <tr>
+          <td>${o.order_code || ''}</td>
+          <td>${o.createddate ? new Date(o.createddate).toLocaleDateString('id-ID') : ''}</td>
+          <td>${o.order_items?.length || 0} item</td>
+          <td>${formatPrice(o.total_amount)}</td>
+          <td>${(STATUS_MAP[o.status] || {}).label || 'Unknown'}</td>
+          <td>${o.payment_method || '-'}</td>
+        </tr>`).join('');
       
-    generatePdfAndPreview(html, 'Laporan Orders');
+      const isFirstPage = i === 0;
+      
+      const headerContent = isFirstPage ? `
+        <div class="header">
+          <div class="logo-container">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l1.992-7.302H3.75a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z" clip-rule="evenodd" />
+            </svg>
+            <h1 class="store-name">Nexus Store</h1>
+          </div>
+          <div class="report-title">Laporan Orders</div>
+          <p class="print-meta">Dicetak: ${new Date().toLocaleString('id-ID')} &nbsp;|&nbsp; Total: ${filteredOrders.length} pesanan</p>
+        </div>` : '<div style="height: 30px;"></div>';
+
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/>
+        <title>Laporan Orders</title>
+        ${styleBlock}
+        ${headerContent}
+        <table class="data-table">
+          <thead><tr>
+            <th>Order Code</th><th>Tanggal</th><th>Items</th><th>Total</th><th>Status</th><th>Metode</th>
+          </tr></thead>
+          <tbody>${printRows}</tbody>
+        </table></html>`;
+        
+      pagesHtml.push(html);
+    }
+    
+    generatePdfAndPreview(pagesHtml, 'Laporan Orders');
   };
 
   const resetFilters = () => {
@@ -895,9 +918,9 @@ export default function AdminPanel() {
       <h3>Game Terlaris (Top ${topGames.length})</h3>
       <table class="data-table"><thead><tr>
         <th>Rank</th><th>Game</th><th>Qty Terjual</th><th>Total Pendapatan</th>
-      </tr></thead><tbody>${printRows}</tbody></table>`;
+      </tr></thead><tbody>${printRows}</tbody></table></html>`;
       
-    generatePdfAndPreview(html, 'Laporan Penjualan');
+    generatePdfAndPreview([html], 'Laporan Penjualan');
   };
 
   // ── Voucher CRUD handlers ─────────────────────────────
