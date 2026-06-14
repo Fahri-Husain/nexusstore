@@ -491,53 +491,36 @@ export default function AdminPanel() {
 
       await new Promise(r => setTimeout(r, 500)); // wait for rendering
 
-      const canvas = await html2canvas(printContainer, { scale: 2, useCORS: true });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      // We use pdf.html which supports CSS page-break-inside: avoid; to prevent row cutting
+      const pdf = new jsPDF('p', 'pt', 'a4'); 
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      const margin = 12; // 12mm margin
-      const contentWidth = pdfWidth - margin * 2;
-      const imgHeight = (canvas.height * contentWidth) / canvas.width;
-      const printHeight = pageHeight - margin * 2;
+      const marginPt = 12 * 2.83465; // 12mm to pt
       
-      let heightLeft = imgHeight;
-      let position = margin;
-      let pageNumber = 1;
-
-      const addFooter = (pageNo) => {
-        pdf.setFillColor(255, 255, 255);
-        pdf.rect(0, 0, pdfWidth, margin, 'F'); // cover top margin
-        pdf.rect(0, pageHeight - margin, pdfWidth, margin, 'F'); // cover bottom margin
-        
-        pdf.setFontSize(9);
-        pdf.setTextColor(100);
-        pdf.text(`${title} - Nexus Store`, margin, pageHeight - 6);
-        pdf.text(`Halaman ${pageNo}`, pdfWidth - margin - 20, pageHeight - 6);
-      };
-
-      pdf.addImage(imgData, 'PNG', margin, position, contentWidth, imgHeight);
-      addFooter(pageNumber);
-      heightLeft -= printHeight;
-
-      while (heightLeft > 0) {
-        position -= printHeight;
-        pdf.addPage();
-        pageNumber++;
-        pdf.addImage(imgData, 'PNG', margin, position, contentWidth, imgHeight);
-        addFooter(pageNumber);
-        heightLeft -= printHeight;
-      }
-      
-      const pdfBlob = pdf.output('blob');
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      
-      setPdfPreviewUrl(pdfUrl);
-      setPdfPreviewTitle(title);
-      
-      document.body.removeChild(printContainer);
-      toast.dismiss(toastId);
+      await pdf.html(printContainer, {
+        margin: [marginPt, marginPt, marginPt + 20, marginPt], // top, right, bottom, left
+        autoPaging: 'text',
+        windowWidth: 800,
+        width: pdfWidth - marginPt * 2,
+        callback: function (doc) {
+          const totalPages = doc.internal.getNumberOfPages();
+          for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text(`${title} - Nexus Store`, marginPt, pdfHeight - marginPt);
+            doc.text(`${i}/${totalPages}`, pdfWidth - marginPt - 20, pdfHeight - marginPt);
+          }
+          const pdfBlob = doc.output('blob');
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          setPdfPreviewUrl(pdfUrl);
+          setPdfPreviewTitle(title);
+          document.body.removeChild(printContainer);
+          toast.dismiss(toastId);
+          setIsGeneratingPdf(false);
+        }
+      });
     } catch (err) {
       console.error(err);
       toast.error('Gagal membuat PDF');
